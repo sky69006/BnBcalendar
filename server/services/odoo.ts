@@ -1,0 +1,234 @@
+import xmlrpc from "xmlrpc";
+
+interface OdooConfig {
+  url: string;
+  db: string;
+  username: string;
+  apiKey: string;
+}
+
+interface OdooAppointment {
+  id: number;
+  name: string;
+  start: string;
+  stop: string;
+  partner_id: [number, string] | false;
+  user_id: [number, string] | false;
+  duration: number;
+  description?: string;
+  location?: string;
+}
+
+interface OdooUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export class OdooService {
+  private config: OdooConfig;
+  private uid: number | null = null;
+  private commonClient: any;
+  private objectClient: any;
+
+  constructor() {
+    this.config = {
+      url: process.env.ODOO_URL || "https://demo.odoo.com",
+      db: process.env.ODOO_DB || "demo",
+      username: process.env.ODOO_USERNAME || "admin",
+      apiKey: process.env.ODOO_API_KEY || process.env.ODOO_PASSWORD || "admin",
+    };
+
+    const url = new URL(this.config.url);
+    const port = url.port ? parseInt(url.port) : (url.protocol === 'https:' ? 443 : 80);
+
+    this.commonClient = xmlrpc.createClient({
+      host: url.hostname,
+      port,
+      path: "/xmlrpc/2/common",
+      basic_auth: {
+        user: this.config.username,
+        pass: this.config.apiKey,
+      },
+    });
+
+    this.objectClient = xmlrpc.createClient({
+      host: url.hostname,
+      port,
+      path: "/xmlrpc/2/object",
+      basic_auth: {
+        user: this.config.username,
+        pass: this.config.apiKey,
+      },
+    });
+  }
+
+  async authenticate(): Promise<number> {
+    if (this.uid) return this.uid;
+
+    return new Promise((resolve, reject) => {
+      this.commonClient.methodCall(
+        "authenticate",
+        [this.config.db, this.config.username, this.config.apiKey, {}],
+        (error: any, uid: number) => {
+          if (error) {
+            reject(new Error(`Odoo authentication failed: ${error.message}`));
+            return;
+          }
+          if (!uid) {
+            reject(new Error("Invalid Odoo credentials"));
+            return;
+          }
+          this.uid = uid;
+          resolve(uid);
+        }
+      );
+    });
+  }
+
+  async getVersion(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.commonClient.methodCall("version", [], (error: any, result: any) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(result);
+      });
+    });
+  }
+
+  async executeKw(
+    model: string,
+    method: string,
+    args: any[] = [],
+    kwargs: any = {}
+  ): Promise<any> {
+    await this.authenticate();
+
+    return new Promise((resolve, reject) => {
+      this.objectClient.methodCall(
+        "execute_kw",
+        [this.config.db, this.uid, this.config.apiKey, model, method, args, kwargs],
+        (error: any, result: any) => {
+          if (error) {
+            reject(new Error(`Odoo API call failed: ${error.message}`));
+            return;
+          }
+          resolve(result);
+        }
+      );
+    });
+  }
+
+  async fetchAppointments(startDate: string, endDate: string): Promise<OdooAppointment[]> {
+    try {
+      const appointments = await this.executeKw(
+        "calendar.event",
+        "search_read",
+        [[
+          ["start", ">=", startDate],
+          ["stop", "<=", endDate],
+          ["state", "!=", "cancelled"]
+        ]],
+        {
+          fields: [
+            "id", "name", "start", "stop", "partner_id", "user_id", 
+            "duration", "description", "location"
+          ],
+          order: "start ASC"
+        }
+      );
+      
+      return appointments;
+    } catch (error) {
+      console.error("Failed to fetch appointments from Odoo:", error);
+      throw error;
+    }
+  }
+
+  async updateAppointment(appointmentId: number, data: Partial<OdooAppointment>): Promise<boolean> {
+    try {
+      const result = await this.executeKw(
+        "calendar.event",
+        "write",
+        [[appointmentId], data]
+      );
+      
+      return result;
+    } catch (error) {
+      console.error("Failed to update appointment in Odoo:", error);
+      throw error;
+    }
+  }
+
+  async createAppointment(data: Partial<OdooAppointment>): Promise<number> {
+    try {
+      const appointmentId = await this.executeKw(
+        "calendar.event",
+        "create",
+        [data]
+      );
+      
+      return appointmentId;
+    } catch (error) {
+      console.error("Failed to create appointment in Odoo:", error);
+      throw error;
+    }
+  }
+
+  async deleteAppointment(appointmentId: number): Promise<boolean> {
+    try {
+      const result = await this.executeKw(
+        "calendar.event",
+        "unlink",
+        [[appointmentId]]
+      );
+      
+      return result;
+    } catch (error) {
+      console.error("Failed to delete appointment in Odoo:", error);
+      throw error;
+    }
+  }
+
+  async fetchUsers(): Promise<OdooUser[]> {
+    try {
+      const users = await this.executeKw(
+        "res.users",
+        "search_read",
+        [[["active", "=", true]]],
+        {
+          fields: ["id", "name", "email"],
+          order: "name ASC"
+        }
+      );
+      
+      return users;
+    } catch (error) {
+      console.error("Failed to fetch users from Odoo:", error);
+      throw error;
+    }
+  }
+
+  async fetchAppointmentTypes(): Promise<any[]> {
+    try {
+      const types = await this.executeKw(
+        "calendar.appointment.type",
+        "search_read",
+        [[]],
+        {
+          fields: ["id", "name", "appointment_duration", "slot_ids", "category"],
+          order: "name ASC"
+        }
+      );
+      
+      return types;
+    } catch (error) {
+      console.error("Failed to fetch appointment types from Odoo:", error);
+      throw error;
+    }
+  }
+}
+
+export const odooService = new OdooService();

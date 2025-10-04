@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(220, 15%, 97%);
+  --foreground: hsl(222, 47%, 11%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222, 47%, 11%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222, 47%, 11%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(174, 62%, 47%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(220, 13%, 91%);
+  --muted-foreground: hsl(220, 9%, 46%);
+  --accent: hsl(38, 92%, 50%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(220, 13%, 87%);
+  --input: hsl(220, 13%, 87%);
+  --ring: hsl(262, 83%, 58%);
+  --chart-1: hsl(262, 83%, 58%);
+  --chart-2: hsl(174, 62%, 47%);
+  --chart-3: hsl(38, 92%, 50%);
+  --chart-4: hsl(340, 82%, 52%);
+  --chart-5: hsl(142, 76%, 36%);
+  --sidebar: hsl(0, 0%, 100%);
+  --sidebar-foreground: hsl(222, 47%, 11%);
+  --sidebar-primary: hsl(262, 83%, 58%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(220, 13%, 91%);
+  --sidebar-accent-foreground: hsl(262, 83%, 58%);
+  --sidebar-border: hsl(220, 13%, 87%);
+  --sidebar-ring: hsl(262, 83%, 58%);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: hsl(222, 47%, 11%);
+  --foreground: hsl(220, 15%, 97%);
+  --card: hsl(222, 47%, 11%);
+  --card-foreground: hsl(220, 15%, 97%);
+  --popover: hsl(222, 47%, 11%);
+  --popover-foreground: hsl(220, 15%, 97%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(174, 62%, 47%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(222, 47%, 16%);
+  --muted-foreground: hsl(220, 13%, 65%);
+  --accent: hsl(38, 92%, 50%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(222, 47%, 16%);
+  --input: hsl(222, 47%, 16%);
+  --ring: hsl(262, 83%, 58%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Calendar Grid Styling */
+.time-slot {
+  min-height: 60px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s;
+}
+
+.time-slot:hover {
+  background-color: hsl(262 83% 58% / 0.03);
+}
+
+.appointment-card {
+  cursor: move;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.appointment-card.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+/* Scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(220, 9%, 65%);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(220, 9%, 55%);
+}
+
+/* Appointment type colors */
+.apt-haircut {
+  background-color: hsl(262, 83%, 58%, 0.12);
+  border-left: 4px solid hsl(262, 83%, 58%);
+}
+
+.apt-color {
+  background-color: hsl(340, 82%, 52%, 0.12);
+  border-left: 4px solid hsl(340, 82%, 52%);
+}
+
+.apt-treatment {
+  background-color: hsl(174, 62%, 47%, 0.12);
+  border-left: 4px solid hsl(174, 62%, 47%);
+}
+
+.apt-consultation {
+  background-color: hsl(38, 92%, 50%, 0.12);
+  border-left: 4px solid hsl(38, 92%, 50%);
+}
+
+/* Availability indicators */
+.availability-busy {
+  background-color: hsl(0, 84%, 60%, 0.08);
+}
+
+.availability-available {
+  background-color: hsl(142, 76%, 36%, 0.06);
+}
+
+/* Current time marker */
+.current-time-marker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: hsl(0, 84%, 60%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.current-time-marker::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  background-color: hsl(0, 84%, 60%);
+  border-radius: 50%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .time-slot {
+    min-height: 50px;
+  }
+}
