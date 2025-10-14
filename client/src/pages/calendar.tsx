@@ -156,7 +156,7 @@ export default function CalendarPage() {
               size={12} 
             />
             <span data-testid="text-sync-status">
-              {isSyncing ? "Syncing..." : `Synced ${formatLastSync(settings?.lastOdooSync?.toISOString() || null)}`}
+              {isSyncing ? "Syncing..." : `Synced ${formatLastSync(settings?.lastOdooSync ? String(settings.lastOdooSync) : null)}`}
             </span>
           </div>
 

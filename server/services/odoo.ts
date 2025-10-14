@@ -40,27 +40,22 @@ export class OdooService {
     };
 
     const url = new URL(this.config.url);
-    const port = url.port ? parseInt(url.port) : (url.protocol === 'https:' ? 443 : 80);
+    const isSecure = url.protocol === 'https:';
+    const port = url.port ? parseInt(url.port) : (isSecure ? 443 : 80);
 
-    this.commonClient = xmlrpc.createClient({
+    const clientOptions = {
       host: url.hostname,
       port,
       path: "/xmlrpc/2/common",
-      basic_auth: {
-        user: this.config.username,
-        pass: this.config.apiKey,
-      },
-    });
+    };
 
-    this.objectClient = xmlrpc.createClient({
-      host: url.hostname,
-      port,
-      path: "/xmlrpc/2/object",
-      basic_auth: {
-        user: this.config.username,
-        pass: this.config.apiKey,
-      },
-    });
+    this.commonClient = isSecure 
+      ? xmlrpc.createSecureClient(clientOptions)
+      : xmlrpc.createClient(clientOptions);
+
+    this.objectClient = isSecure
+      ? xmlrpc.createSecureClient({ ...clientOptions, path: "/xmlrpc/2/object" })
+      : xmlrpc.createClient({ ...clientOptions, path: "/xmlrpc/2/object" });
   }
 
   async authenticate(): Promise<number> {
@@ -128,8 +123,7 @@ export class OdooService {
         "search_read",
         [[
           ["start", ">=", startDate],
-          ["stop", "<=", endDate],
-          ["state", "!=", "cancelled"]
+          ["stop", "<=", endDate]
         ]],
         {
           fields: [
