@@ -8,6 +8,16 @@ The system allows users to view and manage appointments in a calendar grid, conf
 
 Preferred communication style: Simple, everyday language.
 
+# Recent Changes
+
+**October 14, 2025 - Resource-Based Service Filtering**
+- Fixed intermittent booking failures caused by Odoo resource constraints
+- Issue: Odoo enforces which staff members (resources) can provide which services - attempting to book incompatible combinations resulted in errors like "Charlotte cannot be used for Haircut & Brushing"
+- Solution: Implemented client-side filtering based on appointment type resource_ids
+- Backend: Added resource_ids field to appointment type fetch from Odoo
+- Frontend: BookAppointmentDialog now filters services to only show those compatible with selected staff member
+- Result: Users now only see and can book services that are actually available for the selected staff member, preventing all booking errors related to resource constraints
+
 # System Architecture
 
 ## Frontend Architecture
