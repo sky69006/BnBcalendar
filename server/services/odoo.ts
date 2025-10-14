@@ -262,21 +262,22 @@ export class OdooService {
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
       };
 
-      const eventData = {
-        name: data.customerName,
-        partner_name: data.customerName,
+      // Build event name with customer details
+      let eventName = data.customerName;
+      if (data.customerEmail || data.customerPhone) {
+        const details = [];
+        if (data.customerEmail) details.push(data.customerEmail);
+        if (data.customerPhone) details.push(data.customerPhone);
+        eventName = `${data.customerName} (${details.join(', ')})`;
+      }
+
+      const eventData: any = {
+        name: eventName,
         start: formatOdooDate(data.startTime),
         stop: formatOdooDate(data.endTime),
         appointment_type_id: data.appointmentTypeId,
         appointment_resource_id: parseInt(data.staffId),
       };
-
-      if (data.customerEmail) {
-        eventData['partner_email'] = data.customerEmail;
-      }
-      if (data.customerPhone) {
-        eventData['partner_phone'] = data.customerPhone;
-      }
 
       const eventId = await this.executeKw(
         "calendar.event",
@@ -284,29 +285,15 @@ export class OdooService {
         [eventData]
       );
 
-      // Fetch the created event to return full details
-      const createdEvent = await this.executeKw(
-        "calendar.event",
-        "search_read",
-        [
-          [["id", "=", eventId]],
-          {
-            fields: [
-              "id",
-              "name",
-              "partner_name",
-              "partner_email",
-              "partner_phone",
-              "start",
-              "stop",
-              "appointment_type_id",
-              "appointment_resource_id",
-            ],
-          },
-        ]
-      );
-
-      return createdEvent[0];
+      // Return a minimal object with the created event details
+      return {
+        id: eventId,
+        name: eventName,
+        start: eventData.start,
+        stop: eventData.stop,
+        appointment_type_id: eventData.appointment_type_id,
+        appointment_resource_id: eventData.appointment_resource_id,
+      };
     } catch (error) {
       console.error("Failed to create appointment in Odoo:", error);
       throw error;

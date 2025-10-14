@@ -245,7 +245,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           
           <div className="mt-2 text-center">
             <p className="text-xs text-muted-foreground">
-              Last sync: {formatLastSync(settings?.lastOdooSync?.toISOString() || null)}
+              Last sync: {formatLastSync(settings?.lastOdooSync ? (typeof settings.lastOdooSync === 'string' ? settings.lastOdooSync : new Date(settings.lastOdooSync).toISOString()) : null)}
             </p>
             
             {syncResult && (

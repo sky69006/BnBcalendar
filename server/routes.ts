@@ -324,6 +324,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
+      // Look up the staff member to get their Odoo resource ID
+      const staffMember = await storage.getStaff(staffId);
+      if (!staffMember) {
+        return res.status(400).json({ error: "Staff member not found" });
+      }
+
       // Fetch appointment types to calculate durations
       const appointmentTypes = await odooService.fetchAppointmentTypes();
       
@@ -350,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           appointmentTypeId: typeId,
           startTime: currentStartTime.toISOString(),
           endTime: currentEndTime.toISOString(),
-          staffId,
+          staffId: staffMember.odooUserId.toString(),
         });
 
         // Store appointment locally
