@@ -187,21 +187,6 @@ export class OdooService {
     }
   }
 
-  async createAppointment(data: Partial<OdooAppointment>): Promise<number> {
-    try {
-      const appointmentId = await this.executeKw(
-        "calendar.event",
-        "create",
-        [data]
-      );
-      
-      return appointmentId;
-    } catch (error) {
-      console.error("Failed to create appointment in Odoo:", error);
-      throw error;
-    }
-  }
-
   async deleteAppointment(appointmentId: number): Promise<boolean> {
     try {
       const result = await this.executeKw(
@@ -239,11 +224,11 @@ export class OdooService {
   async fetchAppointmentTypes(): Promise<any[]> {
     try {
       const types = await this.executeKw(
-        "calendar.appointment.type",
+        "appointment.type",
         "search_read",
-        [[]],
+        [[["is_published", "=", true]]],
         {
-          fields: ["id", "name", "appointment_duration", "slot_ids", "category"],
+          fields: ["id", "name", "appointment_duration", "is_published", "category"],
           order: "name ASC"
         }
       );
@@ -251,6 +236,79 @@ export class OdooService {
       return types;
     } catch (error) {
       console.error("Failed to fetch appointment types from Odoo:", error);
+      throw error;
+    }
+  }
+
+  async createAppointment(data: {
+    customerName: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    appointmentTypeId: number;
+    startTime: string;
+    endTime: string;
+    staffId: string;
+  }): Promise<any> {
+    try {
+      // Format dates for Odoo (YYYY-MM-DD HH:MM:SS) using UTC
+      const formatOdooDate = (isoString: string) => {
+        const date = new Date(isoString);
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      };
+
+      const eventData = {
+        name: data.customerName,
+        partner_name: data.customerName,
+        start: formatOdooDate(data.startTime),
+        stop: formatOdooDate(data.endTime),
+        appointment_type_id: data.appointmentTypeId,
+        appointment_resource_id: parseInt(data.staffId),
+      };
+
+      if (data.customerEmail) {
+        eventData['partner_email'] = data.customerEmail;
+      }
+      if (data.customerPhone) {
+        eventData['partner_phone'] = data.customerPhone;
+      }
+
+      const eventId = await this.executeKw(
+        "calendar.event",
+        "create",
+        [eventData]
+      );
+
+      // Fetch the created event to return full details
+      const createdEvent = await this.executeKw(
+        "calendar.event",
+        "search_read",
+        [
+          [["id", "=", eventId]],
+          {
+            fields: [
+              "id",
+              "name",
+              "partner_name",
+              "partner_email",
+              "partner_phone",
+              "start",
+              "stop",
+              "appointment_type_id",
+              "appointment_resource_id",
+            ],
+          },
+        ]
+      );
+
+      return createdEvent[0];
+    } catch (error) {
+      console.error("Failed to create appointment in Odoo:", error);
       throw error;
     }
   }

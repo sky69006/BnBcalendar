@@ -297,6 +297,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Appointment types route
+  app.get("/api/appointment-types", async (req, res) => {
+    try {
+      const types = await odooService.fetchAppointmentTypes();
+      res.json(types);
+    } catch (error) {
+      console.error("Failed to fetch appointment types:", error);
+      res.status(500).json({ error: "Failed to fetch appointment types" });
+    }
+  });
+
+  // Book appointment route
+  app.post("/api/appointments/book", async (req, res) => {
+    try {
+      const { 
+        customerName, 
+        customerEmail, 
+        customerPhone, 
+        appointmentTypeIds, 
+        startTime, 
+        staffId 
+      } = req.body;
+
+      if (!customerName || !appointmentTypeIds || !Array.isArray(appointmentTypeIds) || appointmentTypeIds.length === 0) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Fetch appointment types to calculate durations
+      const appointmentTypes = await odooService.fetchAppointmentTypes();
+      
+      const createdAppointments = [];
+      let currentStartTime = new Date(startTime);
+
+      // Create appointments in sequence for each type
+      for (const typeId of appointmentTypeIds) {
+        const appointmentType = appointmentTypes.find(t => t.id === typeId);
+        if (!appointmentType) {
+          console.error(`Appointment type ${typeId} not found`);
+          continue;
+        }
+
+        const durationMinutes = appointmentType.appointment_duration * 60;
+        const currentEndTime = new Date(currentStartTime);
+        currentEndTime.setMinutes(currentEndTime.getMinutes() + durationMinutes);
+
+        // Create appointment in Odoo
+        const odooEvent = await odooService.createAppointment({
+          customerName,
+          customerEmail,
+          customerPhone,
+          appointmentTypeId: typeId,
+          startTime: currentStartTime.toISOString(),
+          endTime: currentEndTime.toISOString(),
+          staffId,
+        });
+
+        // Store appointment locally
+        const localAppointment = await storage.createAppointment({
+          odooEventId: odooEvent.id,
+          name: customerName,
+          customerName,
+          customerEmail: customerEmail || null,
+          customerPhone: customerPhone || null,
+          service: appointmentType.name,
+          startTime: currentStartTime,
+          endTime: currentEndTime,
+          duration: durationMinutes,
+          staffId,
+          status: "confirmed",
+          price: null,
+          notes: null,
+        });
+
+        createdAppointments.push(localAppointment);
+        currentStartTime = currentEndTime; // Next appointment starts when this one ends
+      }
+
+      res.json(createdAppointments);
+    } catch (error) {
+      console.error("Failed to book appointments:", error);
+      res.status(500).json({ error: "Failed to book appointments" });
+    }
+  });
+
   // Calendar settings routes
   app.get("/api/settings", async (req, res) => {
     try {

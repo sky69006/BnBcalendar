@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppointmentCard } from "./AppointmentCard";
+import { BookAppointmentDialog } from "./BookAppointmentDialog";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
 import { format, addMinutes, startOfDay, isSameDay } from "date-fns";
@@ -20,6 +21,13 @@ export function CalendarGrid({
   const queryClient = useQueryClient();
   const [draggedAppointment, setDraggedAppointment] = useState<Appointment | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<{
+    date: Date;
+    time: string;
+    staffId: string;
+    staffName: string;
+  } | null>(null);
 
   // Update current time every minute
   useEffect(() => {
@@ -191,6 +199,16 @@ export function CalendarGrid({
     }
   }, [draggedAppointment, getAppointmentForSlot, rescheduleAppointmentMutation]);
 
+  const handleSlotClick = useCallback((slotTime: Date, staffMember: Staff) => {
+    setSelectedSlot({
+      date: slotTime,
+      time: format(slotTime, 'HH:mm'),
+      staffId: staffMember.id,
+      staffName: staffMember.name
+    });
+    setBookingDialogOpen(true);
+  }, []);
+
   const formatTimeSlot = (time: Date, isMainSlot: boolean = false) => {
     if (isMainSlot) {
       return format(time, 'H:mm');
@@ -204,70 +222,83 @@ export function CalendarGrid({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
-      <div className="relative">
-        {/* Current Time Marker */}
-        {isSameDay(currentTime, currentDate) && (
-          <div 
-            className="current-time-marker absolute left-0 right-0 h-0.5 bg-red-500 z-10 pointer-events-none"
-            style={currentTimeMarkerStyle}
-          >
-            <div className="absolute left-0 top-[-4px] w-2.5 h-2.5 bg-red-500 rounded-full"></div>
-          </div>
-        )}
-
-        {/* Time slots grid */}
-        {timeSlots.map((slotTime, index) => {
-          const interval = settings?.timeInterval || 15;
-          const isMain = isMainTimeSlot(slotTime, interval);
-          
-          return (
-            <div key={slotTime.getTime()} className="flex border-b border-border">
-              {/* Time column */}
-              <div className={cn(
-                "w-20 border-r border-border py-2 px-3 text-xs font-medium text-muted-foreground flex items-start justify-end",
-                isMain ? "bg-muted/50" : "bg-muted/30"
-              )}>
-                {formatTimeSlot(slotTime, isMain)}
-              </div>
-              
-              {/* Staff columns */}
-              <div className="flex flex-1">
-                {staff.map((staffMember, staffIndex) => {
-                  const appointment = getAppointmentForSlot(slotTime, staffMember);
-                  const isBusy = !appointment && isSlotBusy(slotTime, staffMember);
-                  
-                  return (
-                    <div
-                      key={staffMember.id}
-                      className={cn(
-                        "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
-                        staffIndex < staff.length - 1 && "border-r border-border",
-                        isBusy && "availability-busy bg-red-50/30",
-                        !appointment && !isBusy && "availability-available hover:bg-primary/5"
-                      )}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, slotTime, staffMember)}
-                      data-testid={`time-slot-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
-                    >
-                      {appointment && (
-                        <AppointmentCard
-                          appointment={appointment}
-                          staff={staffMember}
-                          onDragStart={handleDragStart}
-                          onDragEnd={handleDragEnd}
-                          onClick={onAppointmentSelect}
-                          isDragging={draggedAppointment?.id === appointment.id}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+    <>
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="relative">
+          {/* Current Time Marker */}
+          {isSameDay(currentTime, currentDate) && (
+            <div 
+              className="current-time-marker absolute left-0 right-0 h-0.5 bg-red-500 z-10 pointer-events-none"
+              style={currentTimeMarkerStyle}
+            >
+              <div className="absolute left-0 top-[-4px] w-2.5 h-2.5 bg-red-500 rounded-full"></div>
             </div>
-          );
-        })}
+          )}
+
+          {/* Time slots grid */}
+          {timeSlots.map((slotTime, index) => {
+            const interval = settings?.timeInterval || 15;
+            const isMain = isMainTimeSlot(slotTime, interval);
+            
+            return (
+              <div key={slotTime.getTime()} className="flex border-b border-border">
+                {/* Time column */}
+                <div className={cn(
+                  "w-20 border-r border-border py-2 px-3 text-xs font-medium text-muted-foreground flex items-start justify-end",
+                  isMain ? "bg-muted/50" : "bg-muted/30"
+                )}>
+                  {formatTimeSlot(slotTime, isMain)}
+                </div>
+                
+                {/* Staff columns */}
+                <div className="flex flex-1">
+                  {staff.map((staffMember, staffIndex) => {
+                    const appointment = getAppointmentForSlot(slotTime, staffMember);
+                    const isBusy = !appointment && isSlotBusy(slotTime, staffMember);
+                    
+                    return (
+                      <div
+                        key={staffMember.id}
+                        className={cn(
+                          "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
+                          staffIndex < staff.length - 1 && "border-r border-border",
+                          isBusy && "availability-busy bg-red-50/30",
+                          !appointment && !isBusy && "availability-available hover:bg-primary/5 cursor-pointer"
+                        )}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, slotTime, staffMember)}
+                        onClick={() => !appointment && !isBusy && handleSlotClick(slotTime, staffMember)}
+                        data-testid={`time-slot-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
+                      >
+                        {appointment && (
+                          <AppointmentCard
+                            appointment={appointment}
+                            staff={staffMember}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            onClick={onAppointmentSelect}
+                            isDragging={draggedAppointment?.id === appointment.id}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      {/* Book Appointment Dialog */}
+      <BookAppointmentDialog
+        open={bookingDialogOpen}
+        onClose={() => setBookingDialogOpen(false)}
+        selectedDate={selectedSlot?.date}
+        selectedTime={selectedSlot?.time}
+        selectedStaffId={selectedSlot?.staffId}
+        selectedStaffName={selectedSlot?.staffName}
+      />
+    </>
   );
 }
