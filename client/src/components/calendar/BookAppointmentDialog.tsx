@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ interface AppointmentType {
   appointment_duration: number;
   is_published: boolean;
   category: string;
+  resource_ids?: number[];
 }
 
 interface BookAppointmentDialogProps {
@@ -45,6 +46,25 @@ export function BookAppointmentDialog({
   const { data: appointmentTypes = [], isLoading } = useQuery<AppointmentType[]>({
     queryKey: ["/api/appointment-types"],
     enabled: open,
+  });
+
+  const { data: staffMembers = [] } = useQuery<any[]>({
+    queryKey: ["/api/staff"],
+    enabled: open,
+  });
+
+  // Get the Odoo resource ID for the selected staff member
+  const selectedStaff = staffMembers.find(s => s.id === selectedStaffId);
+  const selectedResourceId = selectedStaff?.odooUserId;
+
+  // Filter appointment types to only show those compatible with the selected staff
+  const compatibleAppointmentTypes = appointmentTypes.filter(type => {
+    // If no resource_ids specified, the type is available for all resources
+    if (!type.resource_ids || type.resource_ids.length === 0) {
+      return true;
+    }
+    // Otherwise, check if the selected resource is in the allowed list
+    return selectedResourceId && type.resource_ids.includes(selectedResourceId);
   });
 
   const createAppointmentMutation = useMutation({
@@ -152,6 +172,9 @@ export function BookAppointmentDialog({
       <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Book New Appointment</DialogTitle>
+          <DialogDescription>
+            Fill in customer information and select services to book an appointment
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
@@ -239,9 +262,14 @@ export function BookAppointmentDialog({
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
+              ) : compatibleAppointmentTypes.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No services available for {selectedStaffName || 'this staff member'}.</p>
+                  <p className="text-sm mt-2">Please select a different time slot.</p>
+                </div>
               ) : (
                 <div className="space-y-2">
-                  {appointmentTypes.map((type) => (
+                  {compatibleAppointmentTypes.map((type) => (
                     <div
                       key={type.id}
                       className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors"

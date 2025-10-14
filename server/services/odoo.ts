@@ -228,7 +228,7 @@ export class OdooService {
         "search_read",
         [[["is_published", "=", true]]],
         {
-          fields: ["id", "name", "appointment_duration", "is_published", "category"],
+          fields: ["id", "name", "appointment_duration", "is_published", "category", "resource_ids"],
           order: "name ASC"
         }
       );
