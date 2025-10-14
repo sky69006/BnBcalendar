@@ -13,10 +13,20 @@ interface OdooAppointment {
   start: string;
   stop: string;
   partner_id: [number, string] | false;
+  partner_ids: number[];
   user_id: [number, string] | false;
+  appointment_resource_id: [number, string] | false;
+  resource_ids: number[];
+  appointment_type_id: [number, string] | false;
   duration: number;
   description?: string;
   location?: string;
+}
+
+interface OdooResource {
+  id: number;
+  name: string;
+  employee_id: [number, string] | false;
 }
 
 interface OdooUser {
@@ -127,7 +137,9 @@ export class OdooService {
         ]],
         {
           fields: [
-            "id", "name", "start", "stop", "partner_id", "user_id", 
+            "id", "name", "start", "stop", 
+            "partner_id", "partner_ids", "user_id", 
+            "appointment_resource_id", "resource_ids", "appointment_type_id",
             "duration", "description", "location"
           ],
           order: "start ASC"
@@ -137,6 +149,25 @@ export class OdooService {
       return appointments;
     } catch (error) {
       console.error("Failed to fetch appointments from Odoo:", error);
+      throw error;
+    }
+  }
+
+  async fetchResources(): Promise<OdooResource[]> {
+    try {
+      const resources = await this.executeKw(
+        "appointment.resource",
+        "search_read",
+        [[]],
+        {
+          fields: ["id", "name", "employee_id"],
+          order: "name ASC"
+        }
+      );
+      
+      return resources;
+    } catch (error) {
+      console.error("Failed to fetch resources from Odoo:", error);
       throw error;
     }
   }

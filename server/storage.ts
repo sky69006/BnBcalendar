@@ -52,8 +52,7 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
     };
 
-    // Initialize some sample staff members
-    this.initializeSampleData();
+    // No sample data - will be populated from Odoo sync
   }
 
   private initializeSampleData() {

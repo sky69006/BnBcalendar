@@ -208,24 +208,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const startDate = start ? new Date(start).toISOString() : new Date().toISOString();
       const endDate = end ? new Date(end).toISOString() : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      // Fetch appointments from Odoo
-      const odooAppointments = await odooService.fetchAppointments(startDate, endDate);
+      // Fetch resources (employees) from Odoo
+      const odooResources = await odooService.fetchResources();
       
-      // Sync staff members
-      const odooUsers = await odooService.fetchUsers();
-      for (const user of odooUsers) {
-        const existingStaff = await storage.getStaffByOdooUserId(user.id);
+      // Sync staff members based on resources
+      for (const resource of odooResources) {
+        const existingStaff = await storage.getStaffByOdooUserId(resource.id);
         if (!existingStaff) {
           await storage.createStaff({
-            odooUserId: user.id,
-            name: user.name,
-            email: user.email,
-            role: "Staff Member",
+            odooUserId: resource.id,
+            name: resource.name,
+            email: resource.employee_id ? `${resource.name.toLowerCase().replace(/\s+/g, '.')}@salon.com` : "",
+            role: "Stylist",
             color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
             isActive: true,
           });
         }
       }
+
+      // Fetch appointments from Odoo
+      const odooAppointments = await odooService.fetchAppointments(startDate, endDate);
 
       // Sync appointments
       const syncedCount = { created: 0, updated: 0 };
@@ -233,17 +235,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const odooApp of odooAppointments) {
         const existingAppointment = await storage.getAppointmentByOdooEventId(odooApp.id);
         
-        const staff = await storage.getStaffByOdooUserId(
-          Array.isArray(odooApp.user_id) ? odooApp.user_id[0] : 1
-        );
+        // Get staff using appointment_resource_id
+        let staff = null;
+        if (odooApp.appointment_resource_id && Array.isArray(odooApp.appointment_resource_id)) {
+          staff = await storage.getStaffByOdooUserId(odooApp.appointment_resource_id[0]);
+        }
+
+        // Get customer name from partner_ids or partner_id
+        let customerName = "Unknown Customer";
+        if (odooApp.partner_ids && odooApp.partner_ids.length > 0) {
+          // We have partner IDs but need to fetch the name separately
+          // For now, use a fallback or the appointment name
+          customerName = odooApp.name.split(' - ')[0] || odooApp.name;
+        } else if (Array.isArray(odooApp.partner_id)) {
+          customerName = odooApp.partner_id[1];
+        }
 
         const appointmentData = {
           odooEventId: odooApp.id,
           name: odooApp.name || "Untitled Appointment",
-          customerName: Array.isArray(odooApp.partner_id) ? odooApp.partner_id[1] : "Unknown Customer",
+          customerName: customerName,
           customerEmail: "",
           customerPhone: "",
-          service: odooApp.name || "General Service",
+          service: odooApp.appointment_type_id && Array.isArray(odooApp.appointment_type_id) 
+            ? odooApp.appointment_type_id[1] 
+            : odooApp.name || "General Service",
           startTime: new Date(odooApp.start),
           endTime: new Date(odooApp.stop),
           duration: odooApp.duration || 60,
