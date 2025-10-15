@@ -10,6 +10,19 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**October 15, 2025 - Appointment Details Display on Click**
+- Implemented click-to-view appointment details functionality
+- **Fixes Applied**:
+  - Fixed appointment rendering in Day and Week views by changing from exact millisecond comparison to logical hour/minute matching
+  - Fixed click event handling on appointment cards to work alongside drag-and-drop functionality (distinguishes between drag and click based on 5px movement threshold)
+  - Fixed time slot generation to dynamically expand range to include all appointments, even those outside configured working hours
+- **User Experience**:
+  - Click any appointment card to see full details in the right sidebar
+  - Details panel shows: customer name, service, date/time, duration, assigned staff, contact info, status badge, and notes
+  - Works across all three view modes (Day, Week, Month)
+  - Calendar automatically adjusts visible time range to show early morning or late evening appointments
+- **Result**: Users can now view complete appointment information by clicking on any appointment in the calendar, with drag-to-reschedule and click-to-view working independently
+
 **October 15, 2025 - Resource Calendar Integration for Staff Availability**
 - Integrated Odoo resource calendar system to manage individual staff member working hours
 - **Backend Changes**:
