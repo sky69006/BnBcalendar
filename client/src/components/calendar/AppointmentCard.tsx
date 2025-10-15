@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Clock, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Appointment, Staff } from "@shared/schema";
@@ -28,6 +28,9 @@ export function AppointmentCard({
   onClick,
   isDragging = false 
 }: AppointmentCardProps) {
+  const [isDraggingLocal, setIsDraggingLocal] = useState(false);
+  const dragStartPos = useRef<{ x: number; y: number } | null>(null);
+  
   const serviceColorClass = useMemo(() => {
     const service = appointment.service;
     for (const [key, className] of Object.entries(SERVICE_COLORS)) {
@@ -38,14 +41,43 @@ export function AppointmentCard({
     return "apt-haircut"; // default
   }, [appointment.service]);
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+  };
+
   const handleDragStart = (e: React.DragEvent) => {
+    setIsDraggingLocal(true);
     if (onDragStart) {
       onDragStart(e, appointment);
     }
   };
 
-  const handleClick = () => {
-    if (onClick) {
+  const handleDragEnd = (e: React.DragEvent) => {
+    setIsDraggingLocal(false);
+    dragStartPos.current = null;
+    if (onDragEnd) {
+      onDragEnd(e);
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    // Only trigger click if we're not in a drag operation
+    // Check if mouse moved significantly from drag start position
+    if (dragStartPos.current) {
+      const deltaX = Math.abs(e.clientX - dragStartPos.current.x);
+      const deltaY = Math.abs(e.clientY - dragStartPos.current.y);
+      
+      // If moved more than 5px, it was a drag, not a click
+      if (deltaX > 5 || deltaY > 5) {
+        dragStartPos.current = null;
+        return;
+      }
+    }
+    
+    dragStartPos.current = null;
+    
+    if (onClick && !isDraggingLocal) {
+      e.stopPropagation();
       onClick(appointment);
     }
   };
@@ -53,13 +85,14 @@ export function AppointmentCard({
   return (
     <div
       className={cn(
-        "appointment-card rounded-md p-2 h-full cursor-move transition-all",
+        "appointment-card rounded-md p-2 h-full cursor-pointer transition-all",
         serviceColorClass,
         isDragging && "dragging opacity-50 transform rotate-1"
       )}
       draggable="true"
+      onMouseDown={handleMouseDown}
       onDragStart={handleDragStart}
-      onDragEnd={onDragEnd}
+      onDragEnd={handleDragEnd}
       onClick={handleClick}
       data-testid={`appointment-card-${appointment.id}`}
     >
