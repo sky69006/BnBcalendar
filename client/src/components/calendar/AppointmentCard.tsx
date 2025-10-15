@@ -85,7 +85,7 @@ export function AppointmentCard({
   return (
     <div
       className={cn(
-        "appointment-card rounded-md p-2 h-full cursor-pointer transition-all",
+        "appointment-card rounded-md p-2 h-full w-full cursor-pointer transition-all overflow-hidden",
         serviceColorClass,
         isDragging && "dragging opacity-50 transform rotate-1"
       )}

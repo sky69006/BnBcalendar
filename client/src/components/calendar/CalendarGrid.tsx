@@ -117,12 +117,23 @@ export function CalendarGrid({
     let endHour = parseInt(settings?.workingHoursEnd?.split(':')[0] || "17");
     
     // Expand time range to include appointments outside working hours
-    if (appointments.length > 0 && viewMode === 'day') {
+    if (appointments.length > 0 && (viewMode === 'day' || viewMode === 'week')) {
       appointments.forEach(apt => {
         const aptStart = new Date(apt.startTime);
         const aptEnd = new Date(apt.endTime);
         
-        if (isSameDay(aptStart, currentDate)) {
+        // For day view, check if appointment is on current date
+        // For week view, check if appointment is in the week range
+        let isInRange = false;
+        if (viewMode === 'day') {
+          isInRange = isSameDay(aptStart, currentDate);
+        } else if (viewMode === 'week') {
+          const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+          const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+          isInRange = aptStart >= weekStart && aptStart <= weekEnd;
+        }
+        
+        if (isInRange) {
           startHour = Math.min(startHour, aptStart.getHours());
           endHour = Math.max(endHour, aptEnd.getHours() + 1);
         }
