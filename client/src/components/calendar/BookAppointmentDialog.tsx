@@ -6,10 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, Clock, User, Mail, Phone, Loader2 } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar, Clock, User, Mail, Phone, Loader2, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface AppointmentType {
   id: number;
@@ -18,6 +21,14 @@ interface AppointmentType {
   is_published: boolean;
   category: string;
   resource_ids?: number[];
+}
+
+interface Partner {
+  id: number;
+  name: string;
+  email: string | false;
+  phone: string | false;
+  mobile: string | false;
 }
 
 interface BookAppointmentDialogProps {
@@ -42,6 +53,9 @@ export function BookAppointmentDialog({
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
+  const [selectedPartnerId, setSelectedPartnerId] = useState<number | null>(null);
+  const [partnerSearchOpen, setPartnerSearchOpen] = useState(false);
+  const [partnerSearchQuery, setPartnerSearchQuery] = useState("");
 
   const { data: appointmentTypes = [], isLoading } = useQuery<AppointmentType[]>({
     queryKey: ["/api/appointment-types"],
@@ -51,6 +65,11 @@ export function BookAppointmentDialog({
   const { data: staffMembers = [] } = useQuery<any[]>({
     queryKey: ["/api/staff"],
     enabled: open,
+  });
+
+  const { data: partners = [], isLoading: isLoadingPartners } = useQuery<Partner[]>({
+    queryKey: ["/api/partners", partnerSearchQuery],
+    enabled: open && partnerSearchOpen,
   });
 
   // Get the Odoo resource ID for the selected staff member
@@ -94,8 +113,21 @@ export function BookAppointmentDialog({
       setCustomerEmail("");
       setCustomerPhone("");
       setSelectedTypes([]);
+      setSelectedPartnerId(null);
+      setPartnerSearchQuery("");
     }
   }, [open]);
+
+  const handlePartnerSelect = (partnerId: number) => {
+    const partner = partners.find(p => p.id === partnerId);
+    if (partner) {
+      setSelectedPartnerId(partnerId);
+      setCustomerName(partner.name);
+      setCustomerEmail(partner.email ? partner.email : "");
+      setCustomerPhone(partner.phone ? partner.phone : partner.mobile ? partner.mobile : "");
+      setPartnerSearchOpen(false);
+    }
+  };
 
   const handleClose = () => {
     onClose();
@@ -203,12 +235,79 @@ export function BookAppointmentDialog({
             <div className="space-y-4">
               <h3 className="font-semibold">Customer Information</h3>
               
+              {/* Partner Selector */}
+              <div className="space-y-2">
+                <Label>Select Existing Contact</Label>
+                <Popover open={partnerSearchOpen} onOpenChange={setPartnerSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={partnerSearchOpen}
+                      className="w-full justify-between"
+                      data-testid="button-select-partner"
+                    >
+                      {selectedPartnerId
+                        ? partners.find((p) => p.id === selectedPartnerId)?.name
+                        : "Search for a contact..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput 
+                        placeholder="Search contacts..." 
+                        value={partnerSearchQuery}
+                        onValueChange={setPartnerSearchQuery}
+                        data-testid="input-search-partner"
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          {isLoadingPartners ? "Loading..." : "No contacts found."}
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {partners.map((partner) => (
+                            <CommandItem
+                              key={partner.id}
+                              value={partner.id.toString()}
+                              onSelect={() => handlePartnerSelect(partner.id)}
+                              data-testid={`partner-option-${partner.id}`}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedPartnerId === partner.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span>{partner.name}</span>
+                                {(partner.email || partner.phone || partner.mobile) && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {partner.email || partner.phone || partner.mobile}
+                                  </span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-muted-foreground">
+                  Or enter customer details manually below
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="customerName">Name *</Label>
                 <Input
                   id="customerName"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    setSelectedPartnerId(null);
+                  }}
                   placeholder="Enter customer name"
                   data-testid="input-customer-name"
                 />
