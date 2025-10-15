@@ -13,7 +13,7 @@ import {
   FolderSync 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format, addDays, subDays, startOfWeek, addWeeks, subWeeks } from "date-fns";
+import { format, addDays, subDays, startOfWeek, addWeeks, subWeeks, addMonths, subMonths } from "date-fns";
 import type { Appointment, Staff, CalendarSettings } from "@shared/schema";
 
 type ViewMode = 'day' | 'week' | 'month';
@@ -63,7 +63,9 @@ export default function CalendarPage() {
         );
         break;
       case 'month':
-        // Month view implementation would go here
+        setCurrentDate(current => 
+          direction === 'next' ? addMonths(current, 1) : subMonths(current, 1)
+        );
         break;
     }
   };
@@ -241,6 +243,7 @@ export default function CalendarPage() {
           {/* Calendar Grid */}
           <CalendarGrid
             currentDate={currentDate}
+            viewMode={viewMode}
             onAppointmentSelect={setSelectedAppointment}
             selectedAppointment={selectedAppointment}
           />
