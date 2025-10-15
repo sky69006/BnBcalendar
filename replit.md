@@ -10,6 +10,27 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**October 15, 2025 - Partner Contact Selection for Appointments**
+- Implemented Odoo contact (partner) integration for streamlined appointment booking
+- **Backend Changes**:
+  - Added `fetchPartners()` method to OdooService to retrieve contacts from `res.partner` model
+  - Implemented search functionality supporting name, email, and phone filtering (ilike operator)
+  - Created `/api/partners` endpoint with optional search query parameter
+  - Filters for active, individual contacts (excludes companies)
+  - Returns up to 100 partners with id, name, email, phone, and mobile fields
+- **Frontend Changes**:
+  - Added searchable partner selector to BookAppointmentDialog using Command component (cmdk)
+  - Popover-based dropdown with real-time search that queries Odoo's partner database
+  - Auto-fills customer name, email, and phone fields when a partner is selected
+  - Maintains flexibility: users can select existing contacts OR manually enter new customer details
+  - Partner selection clears when user manually edits customer name
+- **User Experience**:
+  - Click "Search for a contact..." button to open partner dropdown
+  - Type to search across names, emails, and phone numbers
+  - Select a partner to instantly populate all contact fields
+  - Or skip partner selection and type customer details directly
+- **Result**: Booking appointments is now faster and more accurate when working with repeat customers, while still supporting new customer entry
+
 **October 15, 2025 - Appointment Details Display on Click**
 - Implemented click-to-view appointment details functionality
 - **Fixes Applied**:
@@ -90,6 +111,9 @@ The storage interface (`IStorage`) abstracts the data layer, allowing easy swapp
 - Appointments: GET/POST/PUT/DELETE `/api/appointments` with date range filtering
 - Settings: GET/PUT `/api/settings`
 - Odoo sync: POST `/api/sync/odoo`, GET `/api/test-odoo`
+- Partners: GET `/api/partners` (with optional search query parameter)
+- Appointment types: GET `/api/appointment-types`
+- Booking: POST `/api/appointments/book` (multi-service booking)
 
 **Development Features**:
 - Vite middleware integration for HMR in development
