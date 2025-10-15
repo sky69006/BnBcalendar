@@ -171,6 +171,36 @@ export function CalendarGrid({
     });
   }, [appointments]);
 
+  // Check if staff member is available at this time based on their working hours
+  const isStaffAvailable = useCallback((slotTime: Date, staffMember: Staff) => {
+    // If no working hours defined, assume available (fallback to global settings)
+    if (!staffMember.workingHours) return true;
+    
+    try {
+      const workingHours = JSON.parse(staffMember.workingHours);
+      
+      // Get day of week (0=Sunday, 1=Monday, etc. in JS)
+      // Odoo uses 0=Monday, so we need to convert
+      const jsDayOfWeek = slotTime.getDay();
+      const odooDayOfWeek = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to Odoo format
+      
+      // Get slot time in decimal hours
+      const slotHours = slotTime.getHours() + slotTime.getMinutes() / 60;
+      
+      // Check if there's a matching working period for this day and time
+      const isAvailable = workingHours.some((wh: any) => {
+        return wh.dayOfWeek === odooDayOfWeek && 
+               slotHours >= wh.hourFrom && 
+               slotHours < wh.hourTo;
+      });
+      
+      return isAvailable;
+    } catch (error) {
+      console.error("Failed to parse working hours:", error);
+      return true; // Fallback to available if parsing fails
+    }
+  }, []);
+
   const handleDragStart = useCallback((e: React.DragEvent, appointment: Appointment) => {
     setDraggedAppointment(appointment);
     e.dataTransfer.effectAllowed = 'move';
@@ -296,6 +326,7 @@ export function CalendarGrid({
                     {staff.map((staffMember, staffIndex) => {
                       const appointment = getAppointmentForSlot(slotTime, staffMember);
                       const isBusy = !appointment && isSlotBusy(slotTime, staffMember);
+                      const isAvailable = isStaffAvailable(slotTime, staffMember);
                       
                       return (
                         <div
@@ -304,11 +335,12 @@ export function CalendarGrid({
                             "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
                             staffIndex < staff.length - 1 && "border-r border-border",
                             isBusy && "availability-busy bg-red-50/30",
-                            !appointment && !isBusy && "availability-available hover:bg-primary/5 cursor-pointer"
+                            !isAvailable && !appointment && "availability-unavailable bg-muted/40 cursor-not-allowed",
+                            !appointment && !isBusy && isAvailable && "availability-available hover:bg-primary/5 cursor-pointer"
                           )}
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDrop(e, slotTime, staffMember)}
-                          onClick={() => !appointment && !isBusy && handleSlotClick(slotTime, staffMember)}
+                          onClick={() => !appointment && !isBusy && isAvailable && handleSlotClick(slotTime, staffMember)}
                           data-testid={`time-slot-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
                         >
                           {appointment && (
