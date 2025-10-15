@@ -214,14 +214,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Sync staff members based on resources
       for (const resource of odooResources) {
         const existingStaff = await storage.getStaffByOdooUserId(resource.id);
+        
+        // Fetch working hours from resource calendar if available
+        let workingHours = null;
+        let resourceCalendarId = null;
+        
+        if (resource.resource_calendar_id && Array.isArray(resource.resource_calendar_id)) {
+          resourceCalendarId = resource.resource_calendar_id[0];
+          try {
+            const calendar = await odooService.fetchResourceCalendar(resourceCalendarId);
+            if (calendar && calendar.attendances) {
+              // Convert Odoo attendances to a simplified format
+              workingHours = calendar.attendances.map((att: any) => ({
+                dayOfWeek: parseInt(att.dayofweek), // 0=Monday, 6=Sunday in Odoo
+                hourFrom: att.hour_from,
+                hourTo: att.hour_to,
+                dayPeriod: att.day_period,
+                name: att.name
+              }));
+            }
+          } catch (calendarError) {
+            console.warn(`Failed to fetch calendar for resource ${resource.id}:`, calendarError);
+          }
+        }
+        
+        const staffData = {
+          odooUserId: resource.id,
+          name: resource.name,
+          email: resource.employee_id ? `${resource.name.toLowerCase().replace(/\s+/g, '.')}@salon.com` : "",
+          role: "Stylist",
+          color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+          isActive: true,
+          resourceCalendarId,
+          workingHours: workingHours ? JSON.stringify(workingHours) : null,
+        };
+        
         if (!existingStaff) {
-          await storage.createStaff({
-            odooUserId: resource.id,
-            name: resource.name,
-            email: resource.employee_id ? `${resource.name.toLowerCase().replace(/\s+/g, '.')}@salon.com` : "",
-            role: "Stylist",
-            color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
-            isActive: true,
+          await storage.createStaff(staffData);
+        } else {
+          // Update working hours if they've changed
+          await storage.updateStaff(existingStaff.id, {
+            resourceCalendarId,
+            workingHours: workingHours ? JSON.stringify(workingHours) : existingStaff.workingHours,
           });
         }
       }

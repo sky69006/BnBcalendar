@@ -17,6 +17,8 @@ export const staff = pgTable("staff", {
   role: text("role"),
   color: text("color").notNull().default("#6366f1"),
   isActive: boolean("is_active").notNull().default(true),
+  resourceCalendarId: integer("resource_calendar_id"),
+  workingHours: text("working_hours"), // JSON string of working hours schedule
   createdAt: timestamp("created_at").defaultNow(),
 });
 

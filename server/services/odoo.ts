@@ -27,6 +27,7 @@ interface OdooResource {
   id: number;
   name: string;
   employee_id: [number, string] | false;
+  resource_calendar_id: [number, string] | false;
 }
 
 interface OdooUser {
@@ -160,7 +161,7 @@ export class OdooService {
         "search_read",
         [[]],
         {
-          fields: ["id", "name", "employee_id"],
+          fields: ["id", "name", "employee_id", "resource_calendar_id"],
           order: "name ASC"
         }
       );
@@ -168,6 +169,42 @@ export class OdooService {
       return resources;
     } catch (error) {
       console.error("Failed to fetch resources from Odoo:", error);
+      throw error;
+    }
+  }
+
+  async fetchResourceCalendar(calendarId: number): Promise<any> {
+    try {
+      const calendar = await this.executeKw(
+        "resource.calendar",
+        "read",
+        [[calendarId]],
+        {
+          fields: ["id", "name", "attendance_ids", "global_leave_ids"]
+        }
+      );
+      
+      if (calendar && calendar.length > 0) {
+        // Fetch attendance records (working hours)
+        const attendanceIds = calendar[0].attendance_ids || [];
+        if (attendanceIds.length > 0) {
+          const attendances = await this.executeKw(
+            "resource.calendar.attendance",
+            "read",
+            [attendanceIds],
+            {
+              fields: ["dayofweek", "hour_from", "hour_to", "day_period", "name"]
+            }
+          );
+          calendar[0].attendances = attendances;
+        }
+        
+        return calendar[0];
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Failed to fetch resource calendar from Odoo:", error);
       throw error;
     }
   }
