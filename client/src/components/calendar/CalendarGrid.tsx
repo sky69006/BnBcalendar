@@ -331,16 +331,17 @@ export function CalendarGrid({
                 {viewMode === 'week' && (
                   <div className="flex flex-1">
                     {displayDays.map((day, dayIndex) => {
-                      const dayAppointments = appointments.filter(apt => 
-                        isSameDay(new Date(apt.startTime), day)
-                      );
+                      // Create the exact datetime for this slot
                       const slotDateTime = new Date(day);
-                      slotDateTime.setHours(slotTime.getHours(), slotTime.getMinutes());
+                      slotDateTime.setHours(slotTime.getHours(), slotTime.getMinutes(), 0, 0);
                       
-                      const appointment = dayAppointments.find(apt => {
+                      // Find appointment that starts at this exact time slot
+                      const appointment = appointments.find(apt => {
                         const aptStart = new Date(apt.startTime);
-                        return aptStart.getHours() === slotDateTime.getHours() && 
-                               aptStart.getMinutes() === slotDateTime.getMinutes();
+                        const aptStartLocal = new Date(aptStart);
+                        return isSameDay(aptStartLocal, day) &&
+                               aptStartLocal.getHours() === slotTime.getHours() && 
+                               aptStartLocal.getMinutes() === slotTime.getMinutes();
                       });
                       
                       const aptStaff = appointment ? staff.find(s => s.id === appointment.staffId) : undefined;
