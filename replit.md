@@ -10,6 +10,21 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**October 15, 2025 - Resource Calendar Integration for Staff Availability**
+- Integrated Odoo resource calendar system to manage individual staff member working hours
+- **Backend Changes**:
+  - Added `fetchResourceCalendar()` method to OdooService to retrieve working hours from `resource.calendar` and `resource.calendar.attendance` models
+  - Updated sync process to fetch `resource_calendar_id` from `appointment.resource` for each staff member
+  - Extended staff schema with `resourceCalendarId` and `workingHours` fields to store calendar data
+  - Working hours stored as JSON array containing day-of-week, hour ranges, and shift names
+- **Frontend Changes**:
+  - Implemented `isStaffAvailable()` function in CalendarGrid to check staff availability based on their working hours
+  - Updated day view to visually differentiate unavailable time slots (gray/muted background, not clickable)
+  - Available slots show white background and are clickable for booking
+  - Prevents booking appointments outside staff working hours
+- **Day of Week Handling**: Properly converts between JavaScript (0=Sunday) and Odoo (0=Monday) day formats
+- **Result**: Calendar now accurately reflects each staff member's individual working schedule from Odoo, improving booking accuracy and preventing invalid appointment creation
+
 **October 15, 2025 - Multi-View Calendar Implementation**
 - Implemented three distinct calendar view modes: Day, Week, and Month
 - **Day View**: Shows single day with staff columns (horizontal) and time slots (vertical) - appointments displayed in their assigned staff member's column
@@ -18,6 +33,7 @@ Preferred communication style: Simple, everyday language.
 - Each view has appropriate navigation (Previous/Next buttons adjust by day/week/month, Today button returns to current period)
 - Calendar Grid component dynamically adjusts data fetching based on view mode (single day, week range, or full month)
 - Fixed appointment rendering logic for week view to properly match appointments to day+time combinations
+- Fixed week view header alignment by adding time column spacer to match grid structure
 - All views tested and verified working correctly with Odoo sync
 
 **October 14, 2025 - Resource-Based Service Filtering**
