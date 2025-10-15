@@ -342,6 +342,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partners route
+  app.get("/api/partners", async (req, res) => {
+    try {
+      const { search } = req.query;
+      const partners = await odooService.fetchPartners(search as string | undefined);
+      res.json(partners);
+    } catch (error) {
+      console.error("Failed to fetch partners:", error);
+      res.status(500).json({ error: "Failed to fetch partners" });
+    }
+  });
+
   // Book appointment route
   app.post("/api/appointments/book", async (req, res) => {
     try {
