@@ -4,17 +4,21 @@ import { AppointmentCard } from "./AppointmentCard";
 import { BookAppointmentDialog } from "./BookAppointmentDialog";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
-import { format, addMinutes, startOfDay, isSameDay } from "date-fns";
+import { format, addMinutes, startOfDay, endOfDay, isSameDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, eachDayOfInterval } from "date-fns";
 import type { Appointment, Staff, CalendarSettings } from "@shared/schema";
+
+type ViewMode = 'day' | 'week' | 'month';
 
 interface CalendarGridProps {
   currentDate: Date;
+  viewMode: ViewMode;
   onAppointmentSelect: (appointment: Appointment) => void;
   selectedAppointment?: Appointment | null;
 }
 
 export function CalendarGrid({ 
-  currentDate, 
+  currentDate,
+  viewMode,
   onAppointmentSelect, 
   selectedAppointment 
 }: CalendarGridProps) {
@@ -46,14 +50,31 @@ export function CalendarGrid({
   });
 
   const { data: appointments = [] } = useQuery<Appointment[]>({
-    queryKey: ["/api/appointments", currentDate.toISOString()],
+    queryKey: ["/api/appointments", currentDate.toISOString(), viewMode],
     queryFn: async () => {
-      const startOfCurrentDay = startOfDay(currentDate);
-      const endOfCurrentDay = new Date(startOfCurrentDay);
-      endOfCurrentDay.setDate(endOfCurrentDay.getDate() + 1);
+      let startDate: Date;
+      let endDate: Date;
+      
+      switch (viewMode) {
+        case 'day':
+          startDate = startOfDay(currentDate);
+          endDate = endOfDay(currentDate);
+          break;
+        case 'week':
+          startDate = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
+          endDate = endOfWeek(currentDate, { weekStartsOn: 1 });
+          break;
+        case 'month':
+          startDate = startOfMonth(currentDate);
+          endDate = endOfMonth(currentDate);
+          break;
+        default:
+          startDate = startOfDay(currentDate);
+          endDate = endOfDay(currentDate);
+      }
       
       const response = await fetch(
-        `/api/appointments?start=${startOfCurrentDay.toISOString()}&end=${endOfCurrentDay.toISOString()}`
+        `/api/appointments?start=${startDate.toISOString()}&end=${endDate.toISOString()}`
       );
       if (!response.ok) throw new Error("Failed to fetch appointments");
       return response.json();
@@ -221,12 +242,31 @@ export function CalendarGrid({
     return minutes === 0 || minutes === 30 || (interval === 15 && minutes % 15 === 0);
   };
 
-  return (
-    <>
+  // Get days for week view
+  const weekDays = useMemo(() => {
+    if (viewMode !== 'week') return [];
+    const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) });
+  }, [currentDate, viewMode]);
+
+  // Get days for month view
+  const monthDays = useMemo(() => {
+    if (viewMode !== 'month') return [];
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    return eachDayOfInterval({ start: monthStart, end: monthEnd });
+  }, [currentDate, viewMode]);
+
+  // Render Day/Week view with time slots
+  const renderTimeSlotView = () => {
+    const displayStaff = viewMode === 'day' ? staff : [];
+    const displayDays = viewMode === 'week' ? weekDays : [currentDate];
+    
+    return (
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="relative">
           {/* Current Time Marker */}
-          {isSameDay(currentTime, currentDate) && (
+          {viewMode === 'day' && isSameDay(currentTime, currentDate) && (
             <div 
               className="current-time-marker absolute left-0 right-0 h-0.5 bg-red-500 z-10 pointer-events-none"
               style={currentTimeMarkerStyle}
@@ -236,7 +276,7 @@ export function CalendarGrid({
           )}
 
           {/* Time slots grid */}
-          {timeSlots.map((slotTime, index) => {
+          {timeSlots.map((slotTime) => {
             const interval = settings?.timeInterval || 15;
             const isMain = isMainTimeSlot(slotTime, interval);
             
@@ -250,45 +290,165 @@ export function CalendarGrid({
                   {formatTimeSlot(slotTime, isMain)}
                 </div>
                 
-                {/* Staff columns */}
-                <div className="flex flex-1">
-                  {staff.map((staffMember, staffIndex) => {
-                    const appointment = getAppointmentForSlot(slotTime, staffMember);
-                    const isBusy = !appointment && isSlotBusy(slotTime, staffMember);
-                    
-                    return (
-                      <div
-                        key={staffMember.id}
-                        className={cn(
-                          "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
-                          staffIndex < staff.length - 1 && "border-r border-border",
-                          isBusy && "availability-busy bg-red-50/30",
-                          !appointment && !isBusy && "availability-available hover:bg-primary/5 cursor-pointer"
-                        )}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, slotTime, staffMember)}
-                        onClick={() => !appointment && !isBusy && handleSlotClick(slotTime, staffMember)}
-                        data-testid={`time-slot-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
-                      >
-                        {appointment && (
-                          <AppointmentCard
-                            appointment={appointment}
-                            staff={staffMember}
-                            onDragStart={handleDragStart}
-                            onDragEnd={handleDragEnd}
-                            onClick={onAppointmentSelect}
-                            isDragging={draggedAppointment?.id === appointment.id}
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
+                {/* Day view: Staff columns */}
+                {viewMode === 'day' && (
+                  <div className="flex flex-1">
+                    {staff.map((staffMember, staffIndex) => {
+                      const appointment = getAppointmentForSlot(slotTime, staffMember);
+                      const isBusy = !appointment && isSlotBusy(slotTime, staffMember);
+                      
+                      return (
+                        <div
+                          key={staffMember.id}
+                          className={cn(
+                            "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
+                            staffIndex < staff.length - 1 && "border-r border-border",
+                            isBusy && "availability-busy bg-red-50/30",
+                            !appointment && !isBusy && "availability-available hover:bg-primary/5 cursor-pointer"
+                          )}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, slotTime, staffMember)}
+                          onClick={() => !appointment && !isBusy && handleSlotClick(slotTime, staffMember)}
+                          data-testid={`time-slot-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
+                        >
+                          {appointment && (
+                            <AppointmentCard
+                              appointment={appointment}
+                              staff={staffMember}
+                              onDragStart={handleDragStart}
+                              onDragEnd={handleDragEnd}
+                              onClick={onAppointmentSelect}
+                              isDragging={draggedAppointment?.id === appointment.id}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Week view: Day columns */}
+                {viewMode === 'week' && (
+                  <div className="flex flex-1">
+                    {displayDays.map((day, dayIndex) => {
+                      const dayAppointments = appointments.filter(apt => 
+                        isSameDay(new Date(apt.startTime), day)
+                      );
+                      const slotDateTime = new Date(day);
+                      slotDateTime.setHours(slotTime.getHours(), slotTime.getMinutes());
+                      
+                      const appointment = dayAppointments.find(apt => {
+                        const aptStart = new Date(apt.startTime);
+                        return aptStart.getHours() === slotDateTime.getHours() && 
+                               aptStart.getMinutes() === slotDateTime.getMinutes();
+                      });
+                      
+                      const aptStaff = appointment ? staff.find(s => s.id === appointment.staffId) : undefined;
+                      
+                      return (
+                        <div
+                          key={day.toISOString()}
+                          className={cn(
+                            "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
+                            dayIndex < displayDays.length - 1 && "border-r border-border",
+                            !appointment && "availability-available hover:bg-primary/5 cursor-pointer"
+                          )}
+                          data-testid={`time-slot-${format(day, 'yyyy-MM-dd')}-${format(slotTime, 'HH-mm')}`}
+                        >
+                          {appointment && aptStaff && (
+                            <AppointmentCard
+                              appointment={appointment}
+                              staff={aptStaff}
+                              onDragStart={handleDragStart}
+                              onDragEnd={handleDragEnd}
+                              onClick={onAppointmentSelect}
+                              isDragging={draggedAppointment?.id === appointment.id}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Render Month view calendar
+  const renderMonthView = () => {
+    const firstDay = monthDays[0];
+    const lastDay = monthDays[monthDays.length - 1];
+    const startPadding = (firstDay.getDay() + 6) % 7; // Adjust for Monday start
+    
+    return (
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+        <div className="grid grid-cols-7 gap-2">
+          {/* Day headers */}
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+            <div key={day} className="text-center font-semibold text-sm py-2 text-muted-foreground">
+              {day}
+            </div>
+          ))}
+          
+          {/* Empty cells for padding */}
+          {Array.from({ length: startPadding }).map((_, i) => (
+            <div key={`padding-${i}`} className="aspect-square" />
+          ))}
+          
+          {/* Day cells */}
+          {monthDays.map(day => {
+            const dayAppointments = appointments.filter(apt => 
+              isSameDay(new Date(apt.startTime), day)
+            );
+            const isToday = isSameDay(day, new Date());
+            
+            return (
+              <div
+                key={day.toISOString()}
+                className={cn(
+                  "aspect-square border border-border rounded-lg p-2 flex flex-col",
+                  isToday && "border-primary border-2 bg-primary/5"
+                )}
+                data-testid={`day-cell-${format(day, 'yyyy-MM-dd')}`}
+              >
+                <div className={cn(
+                  "text-sm font-medium mb-1",
+                  isToday && "text-primary"
+                )}>
+                  {format(day, 'd')}
+                </div>
+                <div className="flex-1 overflow-y-auto space-y-1">
+                  {dayAppointments.slice(0, 3).map(apt => (
+                    <div
+                      key={apt.id}
+                      className="text-xs p-1 rounded bg-primary/10 cursor-pointer hover:bg-primary/20 truncate"
+                      onClick={() => onAppointmentSelect(apt)}
+                      data-testid={`month-appointment-${apt.id}`}
+                    >
+                      {format(new Date(apt.startTime), 'HH:mm')} {apt.customerName}
+                    </div>
+                  ))}
+                  {dayAppointments.length > 3 && (
+                    <div className="text-xs text-muted-foreground">
+                      +{dayAppointments.length - 3} more
+                    </div>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+    );
+  };
+
+  return (
+    <>
+      {viewMode === 'month' ? renderMonthView() : renderTimeSlotView()}
 
       {/* Book Appointment Dialog */}
       <BookAppointmentDialog

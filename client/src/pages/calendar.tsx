@@ -13,7 +13,7 @@ import {
   FolderSync 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format, addDays, subDays, startOfWeek, addWeeks, subWeeks, addMonths, subMonths } from "date-fns";
+import { format, addDays, subDays, startOfWeek, addWeeks, subWeeks, addMonths, subMonths, isSameDay } from "date-fns";
 import type { Appointment, Staff, CalendarSettings } from "@shared/schema";
 
 type ViewMode = 'day' | 'week' | 'month';
@@ -194,51 +194,82 @@ export default function CalendarPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* Calendar View */}
         <main className="flex-1 flex flex-col bg-background overflow-hidden">
-          {/* Calendar Header with Staff Columns */}
-          <div className="bg-card border-b border-border sticky top-0 z-20">
-            <div className="flex">
-              {/* Time column header */}
-              <div className="w-20 border-r border-border flex items-center justify-center py-3 bg-muted">
-                <CalendarIcon className="text-muted-foreground" size={16} />
-              </div>
-              
-              {/* Staff Member Columns */}
-              {staff.map((staffMember, index) => (
-                <div 
-                  key={staffMember.id}
-                  className={cn(
-                    "flex-1 px-4 py-3",
-                    index < staff.length - 1 && "border-r border-border",
-                    `border-l-3 border-l-[${staffMember.color}]`
-                  )}
-                  style={{ borderLeftColor: staffMember.color }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
-                        style={{ 
-                          background: `linear-gradient(135deg, ${staffMember.color}CC, ${staffMember.color})` 
-                        }}
-                      >
-                        {staffMember.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+          {/* Calendar Header - Day and Week Views Only */}
+          {viewMode !== 'month' && (
+            <div className="bg-card border-b border-border sticky top-0 z-20">
+              <div className="flex">
+                {/* Time column header */}
+                <div className="w-20 border-r border-border flex items-center justify-center py-3 bg-muted">
+                  <CalendarIcon className="text-muted-foreground" size={16} />
+                </div>
+                
+                {/* Day View: Staff Member Columns */}
+                {viewMode === 'day' && staff.map((staffMember, index) => (
+                  <div 
+                    key={staffMember.id}
+                    className={cn(
+                      "flex-1 px-4 py-3",
+                      index < staff.length - 1 && "border-r border-border",
+                      `border-l-3 border-l-[${staffMember.color}]`
+                    )}
+                    style={{ borderLeftColor: staffMember.color }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                          style={{ 
+                            background: `linear-gradient(135deg, ${staffMember.color}CC, ${staffMember.color})` 
+                          }}
+                        >
+                          {staffMember.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">{staffMember.name}</h3>
+                          <p className="text-xs text-muted-foreground">{staffMember.role}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{staffMember.name}</h3>
-                        <p className="text-xs text-muted-foreground">{staffMember.role}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-1 bg-accent/10 text-accent text-xs font-medium rounded">
+                          -- booked
+                        </span>
+                        <div className="w-2 h-2 rounded-full bg-green-500" title="Available"></div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-1 bg-accent/10 text-accent text-xs font-medium rounded">
-                        -- booked
-                      </span>
-                      <div className="w-2 h-2 rounded-full bg-green-500" title="Available"></div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+
+                {/* Week View: Day Columns */}
+                {viewMode === 'week' && (() => {
+                  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+                  return Array.from({ length: 7 }).map((_, i) => {
+                    const day = addDays(weekStart, i);
+                    const isToday = isSameDay(day, new Date());
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        className={cn(
+                          "flex-1 px-4 py-3 text-center",
+                          i < 6 && "border-r border-border",
+                          isToday && "bg-primary/5"
+                        )}
+                      >
+                        <div className="font-semibold text-foreground">
+                          {format(day, 'EEE')}
+                        </div>
+                        <div className={cn(
+                          "text-sm",
+                          isToday ? "text-primary font-bold" : "text-muted-foreground"
+                        )}>
+                          {format(day, 'MMM d')}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Calendar Grid */}
           <CalendarGrid
