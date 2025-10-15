@@ -113,8 +113,21 @@ export function CalendarGrid({
   // Generate time slots based on settings
   const timeSlots = useMemo(() => {
     const interval = settings?.timeInterval || 15;
-    const startHour = parseInt(settings?.workingHoursStart?.split(':')[0] || "9");
-    const endHour = parseInt(settings?.workingHoursEnd?.split(':')[0] || "17");
+    let startHour = parseInt(settings?.workingHoursStart?.split(':')[0] || "9");
+    let endHour = parseInt(settings?.workingHoursEnd?.split(':')[0] || "17");
+    
+    // Expand time range to include appointments outside working hours
+    if (appointments.length > 0 && viewMode === 'day') {
+      appointments.forEach(apt => {
+        const aptStart = new Date(apt.startTime);
+        const aptEnd = new Date(apt.endTime);
+        
+        if (isSameDay(aptStart, currentDate)) {
+          startHour = Math.min(startHour, aptStart.getHours());
+          endHour = Math.max(endHour, aptEnd.getHours() + 1);
+        }
+      });
+    }
     
     const slots = [];
     let currentSlot = new Date(currentDate);
@@ -129,7 +142,7 @@ export function CalendarGrid({
     }
     
     return slots;
-  }, [currentDate, settings]);
+  }, [currentDate, settings, appointments, viewMode]);
 
   // Calculate current time marker position
   const currentTimeMarkerStyle = useMemo(() => {
@@ -154,8 +167,11 @@ export function CalendarGrid({
   const getAppointmentForSlot = useCallback((slotTime: Date, staffMember: Staff) => {
     return appointments.find(apt => {
       const aptStart = new Date(apt.startTime);
+      // Match by date, hour, and minute (not exact millisecond)
       return apt.staffId === staffMember.id && 
-             aptStart.getTime() === slotTime.getTime();
+             isSameDay(aptStart, slotTime) &&
+             aptStart.getHours() === slotTime.getHours() &&
+             aptStart.getMinutes() === slotTime.getMinutes();
     });
   }, [appointments]);
 
