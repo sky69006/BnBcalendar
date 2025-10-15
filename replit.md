@@ -10,6 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**October 15, 2025 - Multi-View Calendar Implementation**
+- Implemented three distinct calendar view modes: Day, Week, and Month
+- **Day View**: Shows single day with staff columns (horizontal) and time slots (vertical) - appointments displayed in their assigned staff member's column
+- **Week View**: Shows 7 days (Mon-Sun) as columns with time slots vertically - appointments displayed in their day/time slots
+- **Month View**: Traditional calendar grid showing appointments as chips within day cells
+- Each view has appropriate navigation (Previous/Next buttons adjust by day/week/month, Today button returns to current period)
+- Calendar Grid component dynamically adjusts data fetching based on view mode (single day, week range, or full month)
+- Fixed appointment rendering logic for week view to properly match appointments to day+time combinations
+- All views tested and verified working correctly with Odoo sync
+
 **October 14, 2025 - Resource-Based Service Filtering**
 - Fixed intermittent booking failures caused by Odoo resource constraints
 - Issue: Odoo enforces which staff members (resources) can provide which services - attempting to book incompatible combinations resulted in errors like "Charlotte cannot be used for Haircut & Brushing"
