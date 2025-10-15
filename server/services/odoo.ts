@@ -277,6 +277,37 @@ export class OdooService {
     }
   }
 
+  async fetchPartners(searchTerm?: string): Promise<any[]> {
+    try {
+      const domain: any[] = [["active", "=", true], ["is_company", "=", false]];
+      
+      // Add search filter if provided
+      if (searchTerm && searchTerm.trim()) {
+        domain.push("|", "|", 
+          ["name", "ilike", searchTerm],
+          ["email", "ilike", searchTerm],
+          ["phone", "ilike", searchTerm]
+        );
+      }
+      
+      const partners = await this.executeKw(
+        "res.partner",
+        "search_read",
+        [domain],
+        {
+          fields: ["id", "name", "email", "phone", "mobile"],
+          order: "name ASC",
+          limit: 100
+        }
+      );
+      
+      return partners;
+    } catch (error) {
+      console.error("Failed to fetch partners from Odoo:", error);
+      throw error;
+    }
+  }
+
   async createAppointment(data: {
     customerName: string;
     customerEmail?: string;
