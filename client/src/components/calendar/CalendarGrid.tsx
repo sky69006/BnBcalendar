@@ -379,7 +379,7 @@ export function CalendarGrid({
                         >
                           {appointment && (
                             <div 
-                              className="absolute inset-x-2 top-1"
+                              className="absolute inset-x-2 top-1 z-10"
                               style={{ height: `${appointmentHeight}px` }}
                             >
                               <AppointmentCard
@@ -436,7 +436,7 @@ export function CalendarGrid({
                         >
                           {appointment && aptStaff && (
                             <div 
-                              className="absolute inset-x-2 top-1"
+                              className="absolute inset-x-2 top-1 z-10"
                               style={{ height: `${appointmentHeight}px` }}
                             >
                               <AppointmentCard
