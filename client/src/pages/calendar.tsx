@@ -242,36 +242,30 @@ export default function CalendarPage() {
                 {/* Week View: Day Columns */}
                 {viewMode === 'week' && (() => {
                   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-                  return (
-                    <>
-                      {/* Time column spacer to match grid */}
-                      <div className="w-20 border-r border-border"></div>
-                      {Array.from({ length: 7 }).map((_, i) => {
-                        const day = addDays(weekStart, i);
-                        const isToday = isSameDay(day, new Date());
-                        return (
-                          <div
-                            key={day.toISOString()}
-                            className={cn(
-                              "flex-1 px-4 py-3 text-center",
-                              i < 6 && "border-r border-border",
-                              isToday && "bg-primary/5"
-                            )}
-                          >
-                            <div className="font-semibold text-foreground">
-                              {format(day, 'EEE')}
-                            </div>
-                            <div className={cn(
-                              "text-sm",
-                              isToday ? "text-primary font-bold" : "text-muted-foreground"
-                            )}>
-                              {format(day, 'MMM d')}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </>
-                  );
+                  return Array.from({ length: 7 }).map((_, i) => {
+                    const day = addDays(weekStart, i);
+                    const isToday = isSameDay(day, new Date());
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        className={cn(
+                          "flex-1 px-4 py-3 text-center",
+                          i < 6 && "border-r border-border",
+                          isToday && "bg-primary/5"
+                        )}
+                      >
+                        <div className="font-semibold text-foreground">
+                          {format(day, 'EEE')}
+                        </div>
+                        <div className={cn(
+                          "text-sm",
+                          isToday ? "text-primary font-bold" : "text-muted-foreground"
+                        )}>
+                          {format(day, 'MMM d')}
+                        </div>
+                      </div>
+                    );
+                  });
                 })()}
               </div>
             </div>
