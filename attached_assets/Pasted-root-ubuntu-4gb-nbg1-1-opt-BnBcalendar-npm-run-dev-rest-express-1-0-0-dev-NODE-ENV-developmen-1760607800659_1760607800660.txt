@@ -1,0 +1,91 @@
+root@ubuntu-4gb-nbg1-1:/opt/BnBcalendar# npm run dev
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[dotenv@17.2.3] injecting env (6) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+9:42:59 AM [express] serving on port 5003
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+9:43:04 AM [express] GET /api/staff 304 in 3ms :: []
+9:43:04 AM [express] GET /api/settings 200 in 2ms :: {"id":"664890c3-c531-496c-8732-e619dd13565c","t…
+9:43:04 AM [express] GET /api/appointments 304 in 1ms :: []
+Failed to fetch resources from Odoo: Error: Odoo authentication failed: Unknown XML-RPC tag 'TITLE'
+    at <anonymous> (/opt/BnBcalendar/server/services/odoo.ts:81:20)
+    at /opt/BnBcalendar/node_modules/xmlrpc/lib/client.js:130:9
+    at Deserializer.callback (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:30:7)
+    at Deserializer.onError (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:114:10)
+    at Deserializer.onClosetag (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:202:14)
+    at SAXStream.emit (node:events:524:28)
+    at me._parser.<computed> [as onclosetag] (/opt/BnBcalendar/node_modules/sax/lib/sax.js:258:17)
+    at emit (/opt/BnBcalendar/node_modules/sax/lib/sax.js:624:35)
+    at emitNode (/opt/BnBcalendar/node_modules/sax/lib/sax.js:629:5)
+    at closeTag (/opt/BnBcalendar/node_modules/sax/lib/sax.js:889:7)
+    at SAXParser.write (/opt/BnBcalendar/node_modules/sax/lib/sax.js:1436:13)
+    at SAXStream.write (/opt/BnBcalendar/node_modules/sax/lib/sax.js:239:18)
+    at IncomingMessage.ondata (node:internal/streams/readable:1009:22)
+    at IncomingMessage.emit (node:events:536:35)
+    at Readable.read (node:internal/streams/readable:782:10)
+    at flow (node:internal/streams/readable:1283:53)
+    at resume_ (node:internal/streams/readable:1262:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+Odoo sync failed: Error: Odoo authentication failed: Unknown XML-RPC tag 'TITLE'
+    at <anonymous> (/opt/BnBcalendar/server/services/odoo.ts:81:20)
+    at /opt/BnBcalendar/node_modules/xmlrpc/lib/client.js:130:9
+    at Deserializer.callback (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:30:7)
+    at Deserializer.onError (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:114:10)
+    at Deserializer.onClosetag (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:202:14)
+    at SAXStream.emit (node:events:524:28)
+    at me._parser.<computed> [as onclosetag] (/opt/BnBcalendar/node_modules/sax/lib/sax.js:258:17)
+    at emit (/opt/BnBcalendar/node_modules/sax/lib/sax.js:624:35)
+    at emitNode (/opt/BnBcalendar/node_modules/sax/lib/sax.js:629:5)
+    at closeTag (/opt/BnBcalendar/node_modules/sax/lib/sax.js:889:7)
+    at SAXParser.write (/opt/BnBcalendar/node_modules/sax/lib/sax.js:1436:13)
+    at SAXStream.write (/opt/BnBcalendar/node_modules/sax/lib/sax.js:239:18)
+    at IncomingMessage.ondata (node:internal/streams/readable:1009:22)
+    at IncomingMessage.emit (node:events:536:35)
+    at Readable.read (node:internal/streams/readable:782:10)
+    at flow (node:internal/streams/readable:1283:53)
+    at resume_ (node:internal/streams/readable:1262:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+9:43:04 AM [express] POST /api/sync/odoo 500 in 144ms :: {"error":"Failed to sync with Odoo","detail…
+Failed to fetch resources from Odoo: Error: Odoo authentication failed: Unknown XML-RPC tag 'TITLE'
+    at <anonymous> (/opt/BnBcalendar/server/services/odoo.ts:81:20)
+    at /opt/BnBcalendar/node_modules/xmlrpc/lib/client.js:130:9
+    at Deserializer.callback (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:30:7)
+    at Deserializer.onError (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:114:10)
+    at Deserializer.onClosetag (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:202:14)
+    at SAXStream.emit (node:events:524:28)
+    at me._parser.<computed> [as onclosetag] (/opt/BnBcalendar/node_modules/sax/lib/sax.js:258:17)
+    at emit (/opt/BnBcalendar/node_modules/sax/lib/sax.js:624:35)
+    at emitNode (/opt/BnBcalendar/node_modules/sax/lib/sax.js:629:5)
+    at closeTag (/opt/BnBcalendar/node_modules/sax/lib/sax.js:889:7)
+    at SAXParser.write (/opt/BnBcalendar/node_modules/sax/lib/sax.js:1436:13)
+    at SAXStream.write (/opt/BnBcalendar/node_modules/sax/lib/sax.js:239:18)
+    at IncomingMessage.ondata (node:internal/streams/readable:1009:22)
+    at IncomingMessage.emit (node:events:536:35)
+    at Readable.read (node:internal/streams/readable:782:10)
+    at flow (node:internal/streams/readable:1283:53)
+    at resume_ (node:internal/streams/readable:1262:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+Odoo sync failed: Error: Odoo authentication failed: Unknown XML-RPC tag 'TITLE'
+    at <anonymous> (/opt/BnBcalendar/server/services/odoo.ts:81:20)
+    at /opt/BnBcalendar/node_modules/xmlrpc/lib/client.js:130:9
+    at Deserializer.callback (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:30:7)
+    at Deserializer.onError (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:114:10)
+    at Deserializer.onClosetag (/opt/BnBcalendar/node_modules/xmlrpc/lib/deserializer.js:202:14)
+    at SAXStream.emit (node:events:524:28)
+    at me._parser.<computed> [as onclosetag] (/opt/BnBcalendar/node_modules/sax/lib/sax.js:258:17)
+    at emit (/opt/BnBcalendar/node_modules/sax/lib/sax.js:624:35)
+    at emitNode (/opt/BnBcalendar/node_modules/sax/lib/sax.js:629:5)
+    at closeTag (/opt/BnBcalendar/node_modules/sax/lib/sax.js:889:7)
+    at SAXParser.write (/opt/BnBcalendar/node_modules/sax/lib/sax.js:1436:13)
+    at SAXStream.write (/opt/BnBcalendar/node_modules/sax/lib/sax.js:239:18)
+    at IncomingMessage.ondata (node:internal/streams/readable:1009:22)
+    at IncomingMessage.emit (node:events:536:35)
+    at Readable.read (node:internal/streams/readable:782:10)
+    at flow (node:internal/streams/readable:1283:53)
+    at resume_ (node:internal/streams/readable:1262:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+9:43:04 AM [express] POST /api/sync/odoo 500 in 92ms :: {"error":"Failed to sync with Odoo","details…

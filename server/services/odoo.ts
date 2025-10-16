@@ -79,18 +79,26 @@ export class OdooService {
     if (this.uid) return this.uid;
 
     return new Promise((resolve, reject) => {
+      console.log('[Odoo] Attempting authentication...');
       this.commonClient.methodCall(
         "authenticate",
         [this.config.db, this.config.username, this.config.apiKey, {}],
         (error: any, uid: number) => {
           if (error) {
+            console.error('[Odoo] Authentication error:', error.message);
+            console.error('[Odoo] This might be due to:');
+            console.error('[Odoo]   - Incorrect API key or password');
+            console.error('[Odoo]   - Incorrect database name');
+            console.error('[Odoo]   - Odoo instance blocking XML-RPC requests');
             reject(new Error(`Odoo authentication failed: ${error.message}`));
             return;
           }
           if (!uid) {
+            console.error('[Odoo] Authentication returned no UID - invalid credentials');
             reject(new Error("Invalid Odoo credentials"));
             return;
           }
+          console.log(`[Odoo] Successfully authenticated with UID: ${uid}`);
           this.uid = uid;
           resolve(uid);
         }
