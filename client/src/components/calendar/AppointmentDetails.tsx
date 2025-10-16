@@ -161,7 +161,10 @@ export function AppointmentDetails({
             <Separator className="my-4" />
             <div>
               <p className="text-xs text-muted-foreground mb-1">Notes</p>
-              <p className="text-sm text-foreground">{appointment.notes}</p>
+              <div 
+                className="text-sm text-foreground prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: appointment.notes }}
+              />
             </div>
           </>
         )}
