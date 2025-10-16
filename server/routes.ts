@@ -285,6 +285,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           customerName = odooApp.partner_id[1];
         }
 
+        // Debug: Log the raw duration from Odoo
+        console.log(`[Odoo] Event ${odooApp.id} (${odooApp.name}) - Raw duration: ${odooApp.duration}, Converted: ${odooApp.duration ? odooApp.duration * 60 : 60}`);
+        
         const appointmentData = {
           odooEventId: odooApp.id,
           name: odooApp.name || "Untitled Appointment",
