@@ -399,12 +399,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customerEmail, 
         customerPhone, 
         appointmentTypeIds, 
-        startTime, 
+        startTime,
+        endTime,
         staffId 
       } = req.body;
 
       if (!customerName || !appointmentTypeIds || !Array.isArray(appointmentTypeIds) || appointmentTypeIds.length === 0) {
         return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      if (!startTime || !endTime) {
+        return res.status(400).json({ error: "Start time and end time are required" });
       }
 
       // Look up the staff member to get their Odoo resource ID
@@ -413,60 +418,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Staff member not found" });
       }
 
-      // Fetch appointment types to calculate durations
+      // Fetch appointment types to get service names
       const appointmentTypes = await odooService.fetchAppointmentTypes();
       
-      const createdAppointments = [];
-      let currentStartTime = new Date(startTime);
+      // Build combined service name from all selected types
+      const selectedServices = appointmentTypeIds
+        .map(typeId => {
+          const type = appointmentTypes.find(t => t.id === typeId);
+          return type ? type.name : null;
+        })
+        .filter(name => name !== null);
 
-      // Create appointments in sequence for each type
-      for (const typeId of appointmentTypeIds) {
-        const appointmentType = appointmentTypes.find(t => t.id === typeId);
-        if (!appointmentType) {
-          console.error(`Appointment type ${typeId} not found`);
-          continue;
-        }
+      const combinedServiceName = selectedServices.join(" + ");
 
-        const durationMinutes = appointmentType.appointment_duration * 60;
-        const currentEndTime = new Date(currentStartTime);
-        currentEndTime.setMinutes(currentEndTime.getMinutes() + durationMinutes);
+      // Calculate total duration in minutes
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
 
-        // Create appointment in Odoo
-        const odooEvent = await odooService.createAppointment({
-          customerName,
-          customerEmail,
-          customerPhone,
-          appointmentTypeId: typeId,
-          startTime: currentStartTime.toISOString(),
-          endTime: currentEndTime.toISOString(),
-          staffId: staffMember.odooUserId.toString(),
-        });
+      // Create a SINGLE appointment in Odoo with the first appointment type
+      // (Odoo requires an appointment_type_id, so we use the first one)
+      const odooEvent = await odooService.createAppointment({
+        customerName,
+        customerEmail,
+        customerPhone,
+        appointmentTypeId: appointmentTypeIds[0], // Use first type for Odoo
+        startTime: startTime,
+        endTime: endTime,
+        staffId: staffMember.odooUserId.toString(),
+      });
 
-        // Store appointment locally
-        const localAppointment = await storage.createAppointment({
-          odooEventId: odooEvent.id,
-          name: customerName,
-          customerName,
-          customerEmail: customerEmail || null,
-          customerPhone: customerPhone || null,
-          service: appointmentType.name,
-          startTime: currentStartTime,
-          endTime: currentEndTime,
-          duration: durationMinutes,
-          staffId,
-          status: "confirmed",
-          price: null,
-          notes: null,
-        });
+      // Store a SINGLE appointment locally with combined service name
+      const localAppointment = await storage.createAppointment({
+        odooEventId: odooEvent.id,
+        name: `${customerName} - ${combinedServiceName}`,
+        customerName,
+        customerEmail: customerEmail || null,
+        customerPhone: customerPhone || null,
+        service: combinedServiceName,
+        startTime: start,
+        endTime: end,
+        duration: durationMinutes,
+        staffId,
+        status: "confirmed",
+        price: null,
+        notes: `Services: ${combinedServiceName}`,
+      });
 
-        createdAppointments.push(localAppointment);
-        currentStartTime = currentEndTime; // Next appointment starts when this one ends
-      }
-
-      res.json(createdAppointments);
+      res.json(localAppointment);
     } catch (error) {
-      console.error("Failed to book appointments:", error);
-      res.status(500).json({ error: "Failed to book appointments" });
+      console.error("Failed to book appointment:", error);
+      res.status(500).json({ error: "Failed to book appointment" });
     }
   });
 

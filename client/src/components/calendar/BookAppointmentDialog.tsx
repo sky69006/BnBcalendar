@@ -94,7 +94,7 @@ export function BookAppointmentDialog({
       queryClient.invalidateQueries({ queryKey: ["/api/appointments"], exact: false });
       toast({
         title: "Success",
-        description: "Appointment(s) booked successfully!",
+        description: "Appointment booked successfully!",
       });
       handleClose();
     },
