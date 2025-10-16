@@ -43,11 +43,14 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
 - Partner selection integration for streamlined appointment booking with Odoo contacts.
 - Clickable appointment cards to display detailed information in a sidebar.
 - Reschedule dialog with date/time picker and staff selection.
+- Cancel appointment confirmation dialog (AlertDialog) with destructive action styling and Odoo sync.
 
 ## Technical Implementations
 - Client-side filtering of services based on Odoo resource constraints to prevent booking errors.
 - Sync lock mechanism to prevent concurrent Odoo synchronization issues.
-- Proper date formatting for Odoo XML-RPC calls to avoid data type errors.
+- Proper date formatting for Odoo XML-RPC calls to avoid data type errors (YYYY-MM-DD HH:MM:SS format).
+- DELETE endpoint with bidirectional Odoo sync using "unlink" method for appointment cancellation.
+- Graceful fallback: continues with local operations if Odoo sync fails (with logged warnings).
 
 # External Dependencies
 

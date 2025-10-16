@@ -112,13 +112,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/appointments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Get appointment to check if it has an Odoo ID
+      const appointment = await storage.getAppointment(id);
+      if (!appointment) {
+        return res.status(404).json({ error: "Appointment not found" });
+      }
+
+      // Try to delete from Odoo first, but don't fail if it's not available
+      let odooSyncSuccess = false;
+      if (appointment.odooEventId) {
+        try {
+          await odooService.deleteAppointment(appointment.odooEventId);
+          odooSyncSuccess = true;
+        } catch (odooError) {
+          console.warn("Odoo sync failed for deletion, deleting locally only:", odooError instanceof Error ? odooError.message : odooError);
+          // Continue with local deletion even if Odoo fails
+        }
+      }
+
+      // Delete from local storage
       const deleted = await storage.deleteAppointment(id);
       
       if (!deleted) {
         return res.status(404).json({ error: "Appointment not found" });
       }
       
-      res.json({ success: true });
+      res.json({ 
+        success: true,
+        odooSynced: odooSyncSuccess
+      });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete appointment" });
     }

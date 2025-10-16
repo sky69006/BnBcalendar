@@ -5,6 +5,7 @@ import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { SettingsPanel } from "@/components/calendar/SettingsPanel";
 import { AppointmentDetails } from "@/components/calendar/AppointmentDetails";
 import { RescheduleDialog } from "@/components/calendar/RescheduleDialog";
+import { CancelAppointmentDialog } from "@/components/calendar/CancelAppointmentDialog";
 import { useOdooSync } from "@/hooks/useOdooSync";
 import { 
   Calendar as CalendarIcon, 
@@ -25,6 +26,7 @@ export default function CalendarPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   const { syncWithOdoo, isSyncing, syncResult, syncError } = useOdooSync();
 
@@ -298,8 +300,8 @@ export default function CalendarPage() {
                 setRescheduleDialogOpen(true);
               }}
               onCancel={(appointment) => {
-                console.log("Cancel appointment:", appointment);
-                // TODO: Implement cancel confirmation
+                setSelectedAppointment(appointment);
+                setCancelDialogOpen(true);
               }}
             />
           </aside>
@@ -310,6 +312,12 @@ export default function CalendarPage() {
         appointment={selectedAppointment}
         open={rescheduleDialogOpen}
         onOpenChange={setRescheduleDialogOpen}
+      />
+
+      <CancelAppointmentDialog
+        appointment={selectedAppointment}
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
       />
     </div>
   );
