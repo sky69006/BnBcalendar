@@ -355,6 +355,13 @@ export function CalendarGrid({
                       const isBusy = !appointment && isSlotBusy(slotTime, staffMember);
                       const isAvailable = isStaffAvailable(slotTime, staffMember);
                       
+                      // Calculate appointment height based on duration
+                      const interval = settings?.timeInterval || 15;
+                      const slotHeightPx = 60; // Each slot is 60px tall
+                      const appointmentHeight = appointment 
+                        ? (appointment.duration / interval) * slotHeightPx 
+                        : 0;
+                      
                       return (
                         <div
                           key={staffMember.id}
@@ -371,14 +378,19 @@ export function CalendarGrid({
                           data-testid={`time-slot-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
                         >
                           {appointment && (
-                            <AppointmentCard
-                              appointment={appointment}
-                              staff={staffMember}
-                              onDragStart={handleDragStart}
-                              onDragEnd={handleDragEnd}
-                              onClick={onAppointmentSelect}
-                              isDragging={draggedAppointment?.id === appointment.id}
-                            />
+                            <div 
+                              className="absolute inset-x-2 top-1"
+                              style={{ height: `${appointmentHeight}px` }}
+                            >
+                              <AppointmentCard
+                                appointment={appointment}
+                                staff={staffMember}
+                                onDragStart={handleDragStart}
+                                onDragEnd={handleDragEnd}
+                                onClick={onAppointmentSelect}
+                                isDragging={draggedAppointment?.id === appointment.id}
+                              />
+                            </div>
                           )}
                         </div>
                       );
@@ -405,6 +417,13 @@ export function CalendarGrid({
                       
                       const aptStaff = appointment ? staff.find(s => s.id === appointment.staffId) : undefined;
                       
+                      // Calculate appointment height based on duration
+                      const interval = settings?.timeInterval || 15;
+                      const slotHeightPx = 60; // Each slot is 60px tall
+                      const appointmentHeight = appointment 
+                        ? (appointment.duration / interval) * slotHeightPx 
+                        : 0;
+                      
                       return (
                         <div
                           key={day.toISOString()}
@@ -416,14 +435,19 @@ export function CalendarGrid({
                           data-testid={`time-slot-${format(day, 'yyyy-MM-dd')}-${format(slotTime, 'HH-mm')}`}
                         >
                           {appointment && aptStaff && (
-                            <AppointmentCard
-                              appointment={appointment}
-                              staff={aptStaff}
-                              onDragStart={handleDragStart}
-                              onDragEnd={handleDragEnd}
-                              onClick={onAppointmentSelect}
-                              isDragging={draggedAppointment?.id === appointment.id}
-                            />
+                            <div 
+                              className="absolute inset-x-2 top-1"
+                              style={{ height: `${appointmentHeight}px` }}
+                            >
+                              <AppointmentCard
+                                appointment={appointment}
+                                staff={aptStaff}
+                                onDragStart={handleDragStart}
+                                onDragEnd={handleDragEnd}
+                                onClick={onAppointmentSelect}
+                                isDragging={draggedAppointment?.id === appointment.id}
+                              />
+                            </div>
                           )}
                         </div>
                       );
