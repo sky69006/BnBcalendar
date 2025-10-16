@@ -296,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : odooApp.name || "General Service",
           startTime: new Date(odooApp.start),
           endTime: new Date(odooApp.stop),
-          duration: odooApp.duration || 60,
+          duration: odooApp.duration ? odooApp.duration * 60 : 60, // Convert hours to minutes
           staffId: staff?.id,
           status: "confirmed",
           notes: odooApp.description || "",
