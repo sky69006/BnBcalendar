@@ -42,6 +42,18 @@ export class OdooService {
   private commonClient: any;
   private objectClient: any;
 
+  // Format date for Odoo (expects 'YYYY-MM-DD HH:MM:SS')
+  private formatDateForOdoo(date: Date | string): string {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
   constructor() {
     this.config = {
       url: process.env.ODOO_URL || "https://demo.odoo.com",
@@ -225,10 +237,19 @@ export class OdooService {
 
   async updateAppointment(appointmentId: number, data: Partial<OdooAppointment>): Promise<boolean> {
     try {
+      // Format dates for Odoo if present
+      const formattedData = { ...data };
+      if (formattedData.start) {
+        formattedData.start = this.formatDateForOdoo(formattedData.start);
+      }
+      if (formattedData.stop) {
+        formattedData.stop = this.formatDateForOdoo(formattedData.stop);
+      }
+
       const result = await this.executeKw(
         "calendar.event",
         "write",
-        [[appointmentId], data]
+        [[appointmentId], formattedData]
       );
       
       return result;

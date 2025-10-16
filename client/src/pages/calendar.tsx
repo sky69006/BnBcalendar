@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { SettingsPanel } from "@/components/calendar/SettingsPanel";
 import { AppointmentDetails } from "@/components/calendar/AppointmentDetails";
+import { RescheduleDialog } from "@/components/calendar/RescheduleDialog";
 import { useOdooSync } from "@/hooks/useOdooSync";
 import { 
   Calendar as CalendarIcon, 
@@ -23,6 +24,7 @@ export default function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('week');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
 
   const { syncWithOdoo, isSyncing, syncResult, syncError } = useOdooSync();
 
@@ -292,8 +294,8 @@ export default function CalendarPage() {
               appointment={selectedAppointment}
               staff={staff}
               onReschedule={(appointment) => {
-                console.log("Reschedule appointment:", appointment);
-                // TODO: Implement reschedule dialog
+                setSelectedAppointment(appointment);
+                setRescheduleDialogOpen(true);
               }}
               onCancel={(appointment) => {
                 console.log("Cancel appointment:", appointment);
@@ -303,6 +305,12 @@ export default function CalendarPage() {
           </aside>
         )}
       </div>
+
+      <RescheduleDialog
+        appointment={selectedAppointment}
+        open={rescheduleDialogOpen}
+        onOpenChange={setRescheduleDialogOpen}
+      />
     </div>
   );
 }
