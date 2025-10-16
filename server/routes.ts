@@ -202,7 +202,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Odoo sync routes
+  let isSyncing = false; // Prevent concurrent syncs
+  
   app.post("/api/sync/odoo", async (req, res) => {
+    // Check if sync is already in progress
+    if (isSyncing) {
+      return res.status(429).json({ 
+        error: "Sync already in progress",
+        message: "Please wait for the current sync to complete"
+      });
+    }
+    
+    isSyncing = true;
+    
     try {
       const { start, end } = req.body;
       const startDate = start ? new Date(start).toISOString() : new Date().toISOString();
@@ -328,6 +340,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Failed to sync with Odoo",
         details: error instanceof Error ? error.message : "Unknown error"
       });
+    } finally {
+      isSyncing = false; // Release the sync lock
     }
   });
 
