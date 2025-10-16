@@ -161,15 +161,57 @@ const PORT = process.env.PORT || 5000; // Change 5000 to another port
 
 ### Odoo Connection Fails
 
+#### Error: "Unknown XML-RPC tag 'TITLE'"
+
+This error means the app is getting an HTML page instead of an XML-RPC response. This usually happens when:
+
+**Solution 1: Check Your Odoo URL Format**
+
+Your `ODOO_URL` should be the **base URL only**, without any paths:
+
+```env
+# ✅ CORRECT
+ODOO_URL=https://yourcompany.odoo.com
+ODOO_URL=http://localhost:8069
+
+# ❌ WRONG - Don't include /web or other paths
+ODOO_URL=https://yourcompany.odoo.com/web
+ODOO_URL=https://yourcompany.odoo.com/web/database/selector
+```
+
+**Solution 2: Verify XML-RPC is Enabled**
+
+Some Odoo instances disable XML-RPC for security. Test it with:
+
+```bash
+curl -X POST https://yourcompany.odoo.com/xmlrpc/2/common \
+  -H "Content-Type: text/xml" \
+  -d '<?xml version="1.0"?><methodCall><methodName>version</methodName></methodCall>'
+```
+
+If you get HTML back instead of XML, XML-RPC might be disabled. Contact your Odoo administrator.
+
+**Solution 3: Check for HTTPS/HTTP**
+
+Make sure your URL uses the correct protocol:
+- If your Odoo uses SSL, use `https://`
+- If it's local or doesn't use SSL, use `http://`
+
+**Solution 4: Test the Connection**
+
+1. Visit http://localhost:5003/api/test-odoo (adjust port if different)
+2. You should see version information if connected successfully
+3. If you see an error, check the exact error message
+
+**Other Connection Issues:**
+
 1. **Check your credentials** in the `.env` file
-2. **Test the connection** manually:
-   - Visit http://localhost:5000/api/test-odoo
-   - You should see version information if connected successfully
-3. **Verify Odoo modules** are installed:
+2. **Verify Odoo modules** are installed:
    - Appointments module
-   - Calendar module
+   - Calendar module  
    - Resources module
-4. **Check API key**: Make sure you're using an API key, not your password
+3. **Check API key**: Make sure you're using an API key, not your password
+4. **Database name**: Ensure `ODOO_DB` matches your database name exactly
 
 ### No Appointments Showing
 

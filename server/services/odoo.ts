@@ -50,6 +50,10 @@ export class OdooService {
       apiKey: process.env.ODOO_API_KEY || process.env.ODOO_PASSWORD || "admin",
     };
 
+    console.log(`[Odoo] Connecting to: ${this.config.url}`);
+    console.log(`[Odoo] Database: ${this.config.db}`);
+    console.log(`[Odoo] Username: ${this.config.username}`);
+
     const url = new URL(this.config.url);
     const isSecure = url.protocol === 'https:';
     const port = url.port ? parseInt(url.port) : (isSecure ? 443 : 80);
@@ -59,6 +63,8 @@ export class OdooService {
       port,
       path: "/xmlrpc/2/common",
     };
+
+    console.log(`[Odoo] XML-RPC endpoint: ${isSecure ? 'https' : 'http'}://${url.hostname}:${port}/xmlrpc/2/common`);
 
     this.commonClient = isSecure 
       ? xmlrpc.createSecureClient(clientOptions)
