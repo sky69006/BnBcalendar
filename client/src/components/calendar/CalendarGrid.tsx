@@ -424,6 +424,10 @@ export function CalendarGrid({
                         ? (appointment.duration / interval) * slotHeightPx 
                         : 0;
                       
+                      // In week view, we need to pick a staff member for booking
+                      // Use the first available staff member for the slot
+                      const availableStaff = staff.find(s => s.id) || staff[0];
+                      
                       return (
                         <div
                           key={day.toISOString()}
@@ -432,6 +436,7 @@ export function CalendarGrid({
                             dayIndex < displayDays.length - 1 && "border-r border-border",
                             !appointment && "availability-available hover:bg-primary/5 cursor-pointer"
                           )}
+                          onClick={() => !appointment && availableStaff && handleSlotClick(slotDateTime, availableStaff)}
                           data-testid={`time-slot-${format(day, 'yyyy-MM-dd')}-${format(slotTime, 'HH-mm')}`}
                         >
                           {appointment && aptStaff && (
@@ -490,13 +495,31 @@ export function CalendarGrid({
             );
             const isToday = isSameDay(day, new Date());
             
+            // For month view, use first available staff for booking
+            const availableStaff = staff.find(s => s.id) || staff[0];
+            
+            // Default time for month view bookings (9:00 AM)
+            const defaultTime = new Date(day);
+            defaultTime.setHours(9, 0, 0, 0);
+            
+            const handleDayClick = (e: React.MouseEvent) => {
+              // Only open booking dialog if clicking on empty space (not on an appointment)
+              if ((e.target as HTMLElement).closest('[data-appointment-click]')) {
+                return;
+              }
+              if (availableStaff) {
+                handleSlotClick(defaultTime, availableStaff);
+              }
+            };
+            
             return (
               <div
                 key={day.toISOString()}
                 className={cn(
-                  "aspect-square border border-border rounded-lg p-2 flex flex-col",
+                  "aspect-square border border-border rounded-lg p-2 flex flex-col cursor-pointer hover:bg-muted/50 transition-colors",
                   isToday && "border-primary border-2 bg-primary/5"
                 )}
+                onClick={handleDayClick}
                 data-testid={`day-cell-${format(day, 'yyyy-MM-dd')}`}
               >
                 <div className={cn(
@@ -510,7 +533,11 @@ export function CalendarGrid({
                     <div
                       key={apt.id}
                       className="text-xs p-1 rounded bg-primary/10 cursor-pointer hover:bg-primary/20 truncate"
-                      onClick={() => onAppointmentSelect(apt)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAppointmentSelect(apt);
+                      }}
+                      data-appointment-click="true"
                       data-testid={`month-appointment-${apt.id}`}
                     >
                       {format(new Date(apt.startTime), 'HH:mm')} {apt.customerName}

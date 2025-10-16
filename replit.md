@@ -45,6 +45,7 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
 - Reschedule dialog with date/time picker and staff selection.
 - Cancel appointment confirmation dialog (AlertDialog) with destructive action styling and Odoo sync.
 - Multi-service booking: selecting multiple services creates ONE combined appointment (not separate appointments).
+- Click-to-create appointments: works in all view modes (Day, Week, Month) by clicking empty slots/cells.
 
 ## Technical Implementations
 - Client-side filtering of services based on Odoo resource constraints to prevent booking errors.
