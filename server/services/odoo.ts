@@ -607,6 +607,80 @@ export class OdooService {
       throw error;
     }
   }
+
+  async updateCategoryColor(categoryId: number, colorIndex: number): Promise<boolean> {
+    try {
+      const result = await this.executeKw(
+        "appointment.category",
+        "write",
+        [[categoryId], { color: colorIndex }]
+      );
+      
+      return result;
+    } catch (error) {
+      console.error("Failed to update category color in Odoo:", error);
+      throw error;
+    }
+  }
+
+  async assignRandomColorsToCategories(): Promise<any> {
+    try {
+      console.log('[Odoo] Fetching all appointment categories...');
+      const categories = await this.fetchAppointmentCategories();
+      
+      if (categories.length === 0) {
+        console.log('[Odoo] No categories found to update');
+        return { updated: 0, categories: [] };
+      }
+
+      // Nice distinct color palette (Odoo color indices 0-11)
+      const colorPalette = [
+        0,  // Red
+        1,  // Orange  
+        2,  // Yellow
+        3,  // Light Blue
+        4,  // Purple
+        5,  // Pink
+        6,  // Teal
+        7,  // Navy
+        8,  // Magenta
+        9,  // Green
+        10, // Violet
+        11  // Gray
+      ];
+
+      // Shuffle the palette for random assignment
+      const shuffled = [...colorPalette].sort(() => Math.random() - 0.5);
+      
+      const updates: any[] = [];
+      
+      for (let i = 0; i < categories.length; i++) {
+        const category = categories[i];
+        const newColorIndex = shuffled[i % shuffled.length];
+        
+        console.log(`[Odoo] Updating category "${category.name}" (ID: ${category.id}) to color index ${newColorIndex}`);
+        
+        await this.updateCategoryColor(category.id, newColorIndex);
+        
+        updates.push({
+          id: category.id,
+          name: category.name,
+          oldColor: category.color,
+          newColor: newColorIndex
+        });
+      }
+
+      console.log(`[Odoo] Successfully updated ${updates.length} categories with new colors`);
+      
+      return {
+        updated: updates.length,
+        categories: updates
+      };
+    } catch (error) {
+      console.error("Failed to assign random colors to categories:", error);
+      throw error;
+    }
+  }
 }
 
 export const odooService = new OdooService();
