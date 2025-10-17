@@ -41,11 +41,14 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
 - Visual differentiation for staff availability based on Odoo resource calendars.
 - Dynamic time slot generation to include all appointments.
 - Partner selection integration for streamlined appointment booking with Odoo contacts.
+  - Searchable partner dropdown with real-time search from Odoo res.partner model
+  - Auto-fills customer name, email, and phone when existing partner is selected
 - Clickable appointment cards to display detailed information in a sidebar.
 - Reschedule dialog with date/time picker and staff selection.
 - Cancel appointment confirmation dialog (AlertDialog) with destructive action styling and Odoo sync.
 - Multi-service booking: selecting multiple services creates ONE combined appointment (not separate appointments).
 - Click-to-create appointments: works in all view modes (Day, Week, Month) by clicking empty slots/cells.
+- Sales order creation: When appointments are booked, sales orders are automatically created in Odoo with order lines for each selected service.
 
 ## Technical Implementations
 - Client-side filtering of services based on Odoo resource constraints to prevent booking errors.
@@ -53,6 +56,12 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
 - Proper date formatting for Odoo XML-RPC calls to avoid data type errors (YYYY-MM-DD HH:MM:SS format).
 - DELETE endpoint with bidirectional Odoo sync using "unlink" method for appointment cancellation.
 - Graceful fallback: continues with local operations if Odoo sync fails (with logged warnings).
+- **Sales Order Creation**: Automated sales order generation in Odoo when appointments are booked:
+  - Partner resolution: Finds existing partner by ID, email, or phone, or creates new partner if needed
+  - Product linking: Each appointment type maps to an Odoo product (product_id) for order line creation
+  - Order line generation: Creates order lines for all selected services with proper product references
+  - Error handling: Sales order failures don't block appointment creation (graceful degradation)
+- **Partner Search**: Custom queryFn implementation to pass search query parameter to backend API correctly.
 
 # External Dependencies
 
