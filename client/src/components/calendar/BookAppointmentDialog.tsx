@@ -192,6 +192,7 @@ export function BookAppointmentDialog({
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
       staffId: selectedStaffId,
+      partnerId: selectedPartnerId || undefined,
     });
   };
 

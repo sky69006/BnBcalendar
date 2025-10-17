@@ -401,7 +401,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         appointmentTypeIds, 
         startTime,
         endTime,
-        staffId 
+        staffId,
+        partnerId 
       } = req.body;
 
       if (!customerName || !appointmentTypeIds || !Array.isArray(appointmentTypeIds) || appointmentTypeIds.length === 0) {
@@ -436,6 +437,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const end = new Date(endTime);
       const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
 
+      // Find or create partner in Odoo
+      const odooPartnerId = await odooService.findOrCreatePartner({
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone,
+        partnerId: partnerId
+      });
+
       // Create a SINGLE appointment in Odoo with the first appointment type
       // (Odoo requires an appointment_type_id, so we use the first one)
       const odooEvent = await odooService.createAppointment({
@@ -447,6 +456,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         endTime: endTime,
         staffId: staffMember.odooUserId.toString(),
       });
+
+      // Create sales order in Odoo for the customer
+      try {
+        const salesOrderId = await odooService.createSalesOrder({
+          partnerId: odooPartnerId,
+          appointmentTypeIds: appointmentTypeIds,
+          calendarEventId: odooEvent.id
+        });
+        console.log(`[Booking] Created sales order ${salesOrderId} for appointment ${odooEvent.id}`);
+      } catch (salesOrderError) {
+        console.error("[Booking] Failed to create sales order:", salesOrderError);
+        // Continue with appointment creation even if sales order fails
+        console.warn("[Booking] Continuing with appointment creation despite sales order failure");
+      }
 
       // Store a SINGLE appointment locally with combined service name
       const localAppointment = await storage.createAppointment({
