@@ -338,7 +338,7 @@ export function CalendarGrid({
             const isMain = isMainTimeSlot(slotTime, interval);
             
             return (
-              <div key={slotTime.getTime()} className="flex border-b border-border">
+              <div key={slotTime.getTime()} className="flex">
                 {/* Time column */}
                 <div className={cn(
                   "w-20 border-r border-border py-2 px-3 text-xs font-medium text-muted-foreground flex items-start justify-end",
