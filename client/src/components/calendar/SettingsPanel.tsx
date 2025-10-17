@@ -18,12 +18,12 @@ interface SettingsPanelProps {
 
 const DAYS_OF_WEEK = [
   { key: 1, label: "M", name: "Monday" },
-  { key: 2, label: "T", name: "Tuesday" },
+  { key: 2, label: "D", name: "Tuesday" },
   { key: 3, label: "W", name: "Wednesday" },
-  { key: 4, label: "T", name: "Thursday" },
-  { key: 5, label: "F", name: "Friday" },
-  { key: 6, label: "S", name: "Saturday" },
-  { key: 0, label: "S", name: "Sunday" },
+  { key: 4, label: "D", name: "Thursday" },
+  { key: 5, label: "V", name: "Friday" },
+  { key: 6, label: "Z", name: "Saturday" },
+  { key: 0, label: "Z", name: "Sunday" },
 ];
 
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
@@ -52,8 +52,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     },
     onSuccess: async (data) => {
       toast({
-        title: "Colors Updated!",
-        description: `Successfully updated ${data.updated} category colors. Syncing appointments...`,
+        title: "Kleuren Bijgewerkt!",
+        description: `Succesvol ${data.updated} categorie kleuren bijgewerkt. Afspraken synchroniseren...`,
       });
       
       // Invalidate categories to refresh legend
@@ -71,8 +71,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     },
     onError: (error: Error) => {
       toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update category colors",
+        title: "Bijwerken Mislukt",
+        description: error.message || "Kan categorie kleuren niet bijwerken",
         variant: "destructive",
       });
     },
@@ -129,15 +129,15 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     .split(',').filter(Boolean).map(Number);
 
   const formatLastSync = (lastSync: string | null) => {
-    if (!lastSync) return "Never";
+    if (!lastSync) return "Nooit";
     const date = new Date(lastSync);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
-    if (diffMinutes < 1) return "Just now";
-    if (diffMinutes < 60) return `${diffMinutes} min ago`;
-    if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)} hours ago`;
-    return date.toLocaleDateString();
+    if (diffMinutes < 1) return "Zojuist";
+    if (diffMinutes < 60) return `${diffMinutes} min geleden`;
+    if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)} uur geleden`;
+    return date.toLocaleDateString('nl-NL');
   };
 
   return (
@@ -147,7 +147,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             <Settings className="text-primary" size={20} />
-            Calendar Settings
+            Kalender Instellingen
           </h2>
           <Button 
             variant="ghost" 
@@ -163,7 +163,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         <div className="mb-6">
           <Label className="block text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Clock className="text-primary" size={16} />
-            Time Slot Interval
+            Tijdslot Interval
           </Label>
           <div className="flex gap-2">
             {[10, 15, 30].map((interval) => (
@@ -180,7 +180,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Synced with Odoo agenda settings
+            Gesynchroniseerd met Odoo agenda instellingen
           </p>
         </div>
 
@@ -188,7 +188,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         <div className="mb-6">
           <Label className="block text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <CalendarX className="text-primary" size={16} />
-            Inactive Days
+            Inactieve Dagen
           </Label>
           <div className="grid grid-cols-7 gap-1">
             {DAYS_OF_WEEK.map((day) => (
@@ -206,8 +206,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           </div>
           <p className="text-xs text-muted-foreground mt-2">
             {currentInactiveDays.length > 0 
-              ? `${currentInactiveDays.length} days marked as inactive`
-              : "All days active"
+              ? `${currentInactiveDays.length} dagen gemarkeerd als inactief`
+              : "Alle dagen actief"
             }
           </p>
         </div>
@@ -216,11 +216,11 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         <div className="mb-6">
           <Label className="block text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <CalendarDays className="text-primary" size={16} />
-            Booking Date Range
+            Boekingsdatum Bereik
           </Label>
           <div>
             <Label className="text-xs text-muted-foreground mb-1 block">
-              Months in advance
+              Maanden vooruit
             </Label>
             <Input
               type="number"
@@ -242,7 +242,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         <div className="mb-6">
           <Label className="block text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Users className="text-primary" size={16} />
-            Show Staff Members
+            Toon Medewerkers
           </Label>
           <div className="space-y-2">
             {staff?.map((member) => (
@@ -279,7 +279,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             data-testid="button-sync-odoo"
           >
             <FolderSync className={cn("transition-transform", isSyncing && "animate-spin")} size={16} />
-            {isSyncing ? "Syncing..." : "Sync with Odoo Now"}
+            {isSyncing ? "Synchroniseren..." : "Nu Synchroniseren met Odoo"}
           </Button>
           
           <Button
@@ -290,13 +290,13 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             data-testid="button-randomize-colors"
           >
             <Palette size={16} />
-            {randomizeColorsMutation.isPending ? "Updating..." : "Randomize Category Colors"}
+            {randomizeColorsMutation.isPending ? "Bijwerken..." : "Randomiseer Categorie Kleuren"}
           </Button>
 
           {/* Category Colors Legend */}
           {categories && categories.length > 0 && (
             <div className="mt-4 p-3 rounded-lg bg-muted/50">
-              <h4 className="text-xs font-semibold text-foreground mb-2">Category Colors</h4>
+              <h4 className="text-xs font-semibold text-foreground mb-2">Categorie Kleuren</h4>
               <div className="grid grid-cols-2 gap-2">
                 {categories.map((category) => {
                   // Convert Odoo color index to hex
@@ -333,18 +333,18 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           
           <div className="mt-2 text-center">
             <p className="text-xs text-muted-foreground">
-              Last sync: {formatLastSync(settings?.lastOdooSync ? (typeof settings.lastOdooSync === 'string' ? settings.lastOdooSync : new Date(settings.lastOdooSync).toISOString()) : null)}
+              Laatste sync: {formatLastSync(settings?.lastOdooSync ? (typeof settings.lastOdooSync === 'string' ? settings.lastOdooSync : new Date(settings.lastOdooSync).toISOString()) : null)}
             </p>
             
             {syncResult && (
               <p className="text-xs text-green-600 mt-1">
-                Synced {syncResult.synced?.created || 0} new, {syncResult.synced?.updated || 0} updated
+                Gesynchroniseerd {syncResult.synced?.created || 0} nieuw, {syncResult.synced?.updated || 0} bijgewerkt
               </p>
             )}
             
             {syncError && (
               <p className="text-xs text-red-600 mt-1">
-                FolderSync failed: {syncError.message}
+                Synchronisatie mislukt: {syncError.message}
               </p>
             )}
           </div>
