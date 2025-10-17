@@ -41,6 +41,36 @@ export function AppointmentCard({
     return "apt-haircut"; // default
   }, [appointment.service]);
 
+  // Convert Odoo color index to actual color
+  const getCategoryColor = (colorIndex: string | null): string | null => {
+    if (!colorIndex) return null;
+    
+    // Odoo uses color indices 0-11 that map to predefined colors
+    const odooColors = [
+      '#F06050', // red
+      '#F4A460', // orange  
+      '#F7CD1F', // yellow
+      '#6CC1ED', // light blue
+      '#814968', // dark purple
+      '#EB7E7F', // light red
+      '#2C8397', // teal
+      '#475577', // dark blue
+      '#D6145F', // pink
+      '#30C381', // green
+      '#9365B8', // purple
+      '#808080', // gray
+    ];
+    
+    const index = parseInt(colorIndex);
+    return !isNaN(index) && index >= 0 && index < odooColors.length 
+      ? odooColors[index] 
+      : colorIndex; // If not a number, assume it's already a hex color
+  };
+
+  const categoryColor = appointment.categoryColor 
+    ? getCategoryColor(appointment.categoryColor) 
+    : null;
+
   const handleMouseDown = (e: React.MouseEvent) => {
     dragStartPos.current = { x: e.clientX, y: e.clientY };
   };
@@ -86,9 +116,13 @@ export function AppointmentCard({
     <div
       className={cn(
         "appointment-card rounded-md p-2 h-full w-full cursor-pointer transition-all overflow-hidden",
-        serviceColorClass,
+        !categoryColor && serviceColorClass, // Only use service color if no category color
         isDragging && "dragging opacity-50 transform rotate-1"
       )}
+      style={categoryColor ? {
+        backgroundColor: `${categoryColor}20`, // 20 is 12.5% opacity in hex
+        borderLeft: `4px solid ${categoryColor}`,
+      } : undefined}
       draggable="true"
       onMouseDown={handleMouseDown}
       onDragStart={handleDragStart}

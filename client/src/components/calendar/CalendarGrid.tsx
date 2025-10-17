@@ -536,20 +536,47 @@ export function CalendarGrid({
                   {format(day, 'd')}
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-1">
-                  {dayAppointments.slice(0, 3).map(apt => (
-                    <div
-                      key={apt.id}
-                      className="text-xs p-1 rounded bg-primary/10 cursor-pointer hover:bg-primary/20 truncate"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAppointmentSelect(apt);
-                      }}
-                      data-appointment-click="true"
-                      data-testid={`month-appointment-${apt.id}`}
-                    >
-                      {format(new Date(apt.startTime), 'HH:mm')} {apt.customerName}
-                    </div>
-                  ))}
+                  {dayAppointments.slice(0, 3).map(apt => {
+                    // Convert Odoo color index to actual color
+                    const getCategoryColor = (colorIndex: string | null): string | null => {
+                      if (!colorIndex) return null;
+                      
+                      const odooColors = [
+                        '#F06050', '#F4A460', '#F7CD1F', '#6CC1ED', 
+                        '#814968', '#EB7E7F', '#2C8397', '#475577', 
+                        '#D6145F', '#30C381', '#9365B8', '#808080'
+                      ];
+                      
+                      const index = parseInt(colorIndex);
+                      return !isNaN(index) && index >= 0 && index < odooColors.length 
+                        ? odooColors[index] 
+                        : colorIndex;
+                    };
+
+                    const categoryColor = apt.categoryColor ? getCategoryColor(apt.categoryColor) : null;
+
+                    return (
+                      <div
+                        key={apt.id}
+                        className={cn(
+                          "text-xs p-1 rounded cursor-pointer truncate",
+                          !categoryColor && "bg-primary/10 hover:bg-primary/20"
+                        )}
+                        style={categoryColor ? {
+                          backgroundColor: `${categoryColor}20`,
+                          borderLeft: `3px solid ${categoryColor}`,
+                        } : undefined}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAppointmentSelect(apt);
+                        }}
+                        data-appointment-click="true"
+                        data-testid={`month-appointment-${apt.id}`}
+                      >
+                        {format(new Date(apt.startTime), 'HH:mm')} {apt.customerName}
+                      </div>
+                    );
+                  })}
                   {dayAppointments.length > 3 && (
                     <div className="text-xs text-muted-foreground">
                       +{dayAppointments.length - 3} more
