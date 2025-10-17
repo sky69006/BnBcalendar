@@ -97,14 +97,14 @@ export default function CalendarPage() {
   };
 
   const formatLastSync = (lastSync: string | null) => {
-    if (!lastSync) return "Never";
+    if (!lastSync) return "Nooit";
     const date = new Date(lastSync);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
-    if (diffMinutes < 1) return "Just now";
-    if (diffMinutes < 60) return `${diffMinutes} min ago`;
-    return `${Math.floor(diffMinutes / 60)} hours ago`;
+    if (diffMinutes < 1) return "Zojuist";
+    if (diffMinutes < 60) return `${diffMinutes} min geleden`;
+    return `${Math.floor(diffMinutes / 60)} uur geleden`;
   };
 
   // Staff filtering handlers
@@ -144,8 +144,8 @@ export default function CalendarPage() {
               <CalendarIcon className="text-primary-foreground" size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Appointments Calendar</h1>
-              <p className="text-xs text-muted-foreground">Odoo Integration</p>
+              <h1 className="text-xl font-bold text-foreground">Afspraken Kalender</h1>
+              <p className="text-xs text-muted-foreground">Odoo Integratie</p>
             </div>
           </div>
 
@@ -157,24 +157,26 @@ export default function CalendarPage() {
                 size={12} 
               />
               <span data-testid="text-sync-status">
-                {isSyncing ? "Syncing..." : `Synced ${formatLastSync(settings?.lastOdooSync ? String(settings.lastOdooSync) : null)}`}
+                {isSyncing ? "Synchroniseren..." : `Gesynchroniseerd ${formatLastSync(settings?.lastOdooSync ? String(settings.lastOdooSync) : null)}`}
               </span>
             </div>
 
             {/* View Mode Switcher */}
             <div className="flex items-center bg-muted rounded-lg p-1">
-              {(['day', 'week', 'month'] as ViewMode[]).map((mode) => (
-                <Button
-                  key={mode}
-                  variant={viewMode === mode ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode(mode)}
-                  className="capitalize"
-                  data-testid={`button-view-${mode}`}
-                >
-                  {mode}
-                </Button>
-              ))}
+              {(['day', 'week', 'month'] as ViewMode[]).map((mode) => {
+                const modeLabels = { day: 'Dag', week: 'Week', month: 'Maand' };
+                return (
+                  <Button
+                    key={mode}
+                    variant={viewMode === mode ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode(mode)}
+                    data-testid={`button-view-${mode}`}
+                  >
+                    {modeLabels[mode]}
+                  </Button>
+                );
+              })}
             </div>
 
             {/* Settings Button */}
@@ -184,7 +186,7 @@ export default function CalendarPage() {
               data-testid="button-toggle-settings"
             >
               <Settings size={16} className="mr-2" />
-              Settings
+              Instellingen
             </Button>
           </div>
         </div>
@@ -207,7 +209,7 @@ export default function CalendarPage() {
               onClick={goToToday}
               data-testid="button-today"
             >
-              Today
+              Vandaag
             </Button>
             
             <Button
@@ -281,9 +283,9 @@ export default function CalendarPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="px-2 py-1 bg-accent/10 text-accent text-xs font-medium rounded">
-                                -- booked
+                                -- geboekt
                               </span>
-                              <div className="w-2 h-2 rounded-full bg-green-500" title="Available"></div>
+                              <div className="w-2 h-2 rounded-full bg-green-500" title="Beschikbaar"></div>
                             </div>
                           </div>
                         </div>

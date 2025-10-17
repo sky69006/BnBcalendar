@@ -26,7 +26,7 @@ export function StaffLegend({
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <Users size={16} className="text-muted-foreground" />
-          <span className="text-sm font-medium text-foreground">Resources:</span>
+          <span className="text-sm font-medium text-foreground">Medewerkers:</span>
         </div>
         
         <Button
@@ -35,7 +35,7 @@ export function StaffLegend({
           onClick={onSelectAll}
           data-testid="button-select-all-staff"
         >
-          All
+          Alle
         </Button>
 
         <div className="h-6 w-px bg-border"></div>
@@ -71,7 +71,7 @@ export function StaffLegend({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Users size={16} className="text-muted-foreground" />
-          <h3 className="font-semibold text-foreground">Resources</h3>
+          <h3 className="font-semibold text-foreground">Medewerkers</h3>
         </div>
         <button
           onClick={onSelectAll}
@@ -79,7 +79,7 @@ export function StaffLegend({
           disabled={allSelected}
           data-testid="button-select-all-staff"
         >
-          All
+          Alle
         </button>
       </div>
 
