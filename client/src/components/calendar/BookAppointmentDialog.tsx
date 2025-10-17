@@ -69,6 +69,14 @@ export function BookAppointmentDialog({
 
   const { data: partners = [], isLoading: isLoadingPartners } = useQuery<Partner[]>({
     queryKey: ["/api/partners", partnerSearchQuery],
+    queryFn: async () => {
+      const url = partnerSearchQuery 
+        ? `/api/partners?search=${encodeURIComponent(partnerSearchQuery)}`
+        : '/api/partners';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch partners');
+      return response.json();
+    },
     enabled: open && partnerSearchOpen,
   });
 
