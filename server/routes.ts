@@ -380,6 +380,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Appointment categories route
+  app.get("/api/appointment-categories", async (req, res) => {
+    try {
+      const categories = await odooService.fetchAppointmentCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Failed to fetch appointment categories:", error);
+      res.status(500).json({ error: "Failed to fetch appointment categories" });
+    }
+  });
+
   // Partners route
   app.get("/api/partners", async (req, res) => {
     try {

@@ -347,6 +347,25 @@ export class OdooService {
     }
   }
 
+  async fetchAppointmentCategories(): Promise<any[]> {
+    try {
+      const categories = await this.executeKw(
+        "appointment.category",
+        "search_read",
+        [[]],
+        {
+          fields: ["id", "name", "color"],
+          order: "name ASC"
+        }
+      );
+      
+      return categories;
+    } catch (error) {
+      console.error("Failed to fetch appointment categories from Odoo:", error);
+      throw error;
+    }
+  }
+
   async fetchPartners(searchTerm?: string): Promise<any[]> {
     try {
       const domain: any[] = [["active", "=", true], ["is_company", "=", false]];

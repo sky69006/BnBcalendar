@@ -12,6 +12,7 @@ import {
   XCircle,
   CheckCircle
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { Appointment, Staff } from "@shared/schema";
 
 interface AppointmentDetailsProps {
@@ -21,12 +22,22 @@ interface AppointmentDetailsProps {
   onCancel?: (appointment: Appointment) => void;
 }
 
+interface AppointmentCategory {
+  id: number;
+  name: string;
+  color: string;
+}
+
 export function AppointmentDetails({ 
   appointment, 
   staff = [], 
   onReschedule, 
   onCancel 
 }: AppointmentDetailsProps) {
+  // Fetch appointment categories
+  const { data: categories = [] } = useQuery<AppointmentCategory[]>({
+    queryKey: ["/api/appointment-categories"],
+  });
   if (!appointment) {
     return (
       <div className="p-6">
@@ -227,59 +238,41 @@ export function AppointmentDetails({
       </div>
 
       {/* Category Colors Legend */}
-      <div className="mt-6 pt-6 border-t border-border">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Category Colors</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#F06050', backgroundColor: '#F0605020' }}></div>
-            <span className="text-xs text-foreground">Red</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#F4A460', backgroundColor: '#F4A46020' }}></div>
-            <span className="text-xs text-foreground">Orange</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#F7CD1F', backgroundColor: '#F7CD1F20' }}></div>
-            <span className="text-xs text-foreground">Yellow</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#6CC1ED', backgroundColor: '#6CC1ED20' }}></div>
-            <span className="text-xs text-foreground">Light Blue</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#814968', backgroundColor: '#81496820' }}></div>
-            <span className="text-xs text-foreground">Dark Purple</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#EB7E7F', backgroundColor: '#EB7E7F20' }}></div>
-            <span className="text-xs text-foreground">Light Red</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#2C8397', backgroundColor: '#2C839720' }}></div>
-            <span className="text-xs text-foreground">Teal</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#475577', backgroundColor: '#47557720' }}></div>
-            <span className="text-xs text-foreground">Dark Blue</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#D6145F', backgroundColor: '#D6145F20' }}></div>
-            <span className="text-xs text-foreground">Pink</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#30C381', backgroundColor: '#30C38120' }}></div>
-            <span className="text-xs text-foreground">Green</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#9365B8', backgroundColor: '#9365B820' }}></div>
-            <span className="text-xs text-foreground">Purple</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#808080', backgroundColor: '#80808020' }}></div>
-            <span className="text-xs text-foreground">Gray</span>
+      {categories.length > 0 && (
+        <div className="mt-6 pt-6 border-t border-border">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Category Colors</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {categories.map((category) => {
+              // Convert Odoo color index to hex
+              const odooColors = [
+                '#F06050', '#F4A460', '#F7CD1F', '#6CC1ED', 
+                '#814968', '#EB7E7F', '#2C8397', '#475577', 
+                '#D6145F', '#30C381', '#9365B8', '#808080'
+              ];
+              
+              const colorIndex = parseInt(category.color);
+              const hexColor = !isNaN(colorIndex) && colorIndex >= 0 && colorIndex < odooColors.length 
+                ? odooColors[colorIndex] 
+                : category.color;
+
+              return (
+                <div key={category.id} className="flex items-center gap-2">
+                  <div 
+                    className="w-4 h-4 rounded border-l-4 flex-shrink-0" 
+                    style={{ 
+                      borderColor: hexColor, 
+                      backgroundColor: `${hexColor}20` 
+                    }}
+                  ></div>
+                  <span className="text-xs text-foreground truncate" title={category.name}>
+                    {category.name}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
