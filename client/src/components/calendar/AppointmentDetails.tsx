@@ -225,6 +225,61 @@ export function AppointmentDetails({
           </div>
         </div>
       </div>
+
+      {/* Category Colors Legend */}
+      <div className="mt-6 pt-6 border-t border-border">
+        <h3 className="text-sm font-semibold text-foreground mb-3">Category Colors</h3>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#F06050', backgroundColor: '#F0605020' }}></div>
+            <span className="text-xs text-foreground">Red</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#F4A460', backgroundColor: '#F4A46020' }}></div>
+            <span className="text-xs text-foreground">Orange</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#F7CD1F', backgroundColor: '#F7CD1F20' }}></div>
+            <span className="text-xs text-foreground">Yellow</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#6CC1ED', backgroundColor: '#6CC1ED20' }}></div>
+            <span className="text-xs text-foreground">Light Blue</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#814968', backgroundColor: '#81496820' }}></div>
+            <span className="text-xs text-foreground">Dark Purple</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#EB7E7F', backgroundColor: '#EB7E7F20' }}></div>
+            <span className="text-xs text-foreground">Light Red</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#2C8397', backgroundColor: '#2C839720' }}></div>
+            <span className="text-xs text-foreground">Teal</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#475577', backgroundColor: '#47557720' }}></div>
+            <span className="text-xs text-foreground">Dark Blue</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#D6145F', backgroundColor: '#D6145F20' }}></div>
+            <span className="text-xs text-foreground">Pink</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#30C381', backgroundColor: '#30C38120' }}></div>
+            <span className="text-xs text-foreground">Green</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#9365B8', backgroundColor: '#9365B820' }}></div>
+            <span className="text-xs text-foreground">Purple</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded border-l-4" style={{ borderColor: '#808080', backgroundColor: '#80808020' }}></div>
+            <span className="text-xs text-foreground">Gray</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
