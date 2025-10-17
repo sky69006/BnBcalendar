@@ -300,7 +300,7 @@ export class OdooService {
         "search_read",
         [[["is_published", "=", true]]],
         {
-          fields: ["id", "name", "appointment_duration", "is_published", "category", "resource_ids"],
+          fields: ["id", "name", "appointment_duration", "is_published", "category", "resource_ids", "product_id"],
           order: "name ASC"
         }
       );
@@ -339,6 +339,152 @@ export class OdooService {
       return partners;
     } catch (error) {
       console.error("Failed to fetch partners from Odoo:", error);
+      throw error;
+    }
+  }
+
+  async findOrCreatePartner(data: {
+    name: string;
+    email?: string;
+    phone?: string;
+    partnerId?: number;
+  }): Promise<number> {
+    try {
+      // If partner ID is provided, verify it exists
+      if (data.partnerId) {
+        const existingPartner = await this.executeKw(
+          "res.partner",
+          "search_read",
+          [[["id", "=", data.partnerId]]],
+          { fields: ["id"], limit: 1 }
+        );
+        if (existingPartner && existingPartner.length > 0) {
+          console.log(`[Odoo] Using existing partner ID: ${data.partnerId}`);
+          return data.partnerId;
+        }
+      }
+
+      // Try to find existing partner by email or phone
+      const searchDomain: any[] = [];
+      if (data.email) {
+        searchDomain.push(["email", "=", data.email]);
+      }
+      if (data.phone && searchDomain.length > 0) {
+        searchDomain.unshift("|");
+        searchDomain.push(["phone", "=", data.phone]);
+      } else if (data.phone) {
+        searchDomain.push(["phone", "=", data.phone]);
+      }
+
+      if (searchDomain.length > 0) {
+        const existingPartners = await this.executeKw(
+          "res.partner",
+          "search_read",
+          [searchDomain],
+          { fields: ["id"], limit: 1 }
+        );
+
+        if (existingPartners && existingPartners.length > 0) {
+          console.log(`[Odoo] Found existing partner: ${existingPartners[0].id}`);
+          return existingPartners[0].id;
+        }
+      }
+
+      // Create new partner if not found
+      const partnerData: any = {
+        name: data.name,
+        is_company: false,
+      };
+      if (data.email) partnerData.email = data.email;
+      if (data.phone) partnerData.phone = data.phone;
+
+      const partnerId = await this.executeKw(
+        "res.partner",
+        "create",
+        [partnerData]
+      );
+
+      console.log(`[Odoo] Created new partner with ID: ${partnerId}`);
+      return partnerId;
+    } catch (error) {
+      console.error("Failed to find or create partner in Odoo:", error);
+      throw error;
+    }
+  }
+
+  async createSalesOrder(data: {
+    partnerId: number;
+    appointmentTypeIds: number[];
+    calendarEventId?: number;
+  }): Promise<number> {
+    try {
+      console.log(`[Odoo] Creating sales order for partner ${data.partnerId}`);
+      
+      // Fetch appointment types with product information
+      const appointmentTypes = await this.executeKw(
+        "appointment.type",
+        "search_read",
+        [[["id", "in", data.appointmentTypeIds]]],
+        { fields: ["id", "name", "product_id"] }
+      );
+
+      // Create sales order
+      const orderData: any = {
+        partner_id: data.partnerId,
+        date_order: this.formatDateForOdoo(new Date()),
+      };
+
+      // Link to calendar event if provided
+      if (data.calendarEventId) {
+        orderData.calendar_event_id = data.calendarEventId;
+      }
+
+      const orderId = await this.executeKw(
+        "sale.order",
+        "create",
+        [orderData]
+      );
+
+      console.log(`[Odoo] Created sales order with ID: ${orderId}`);
+
+      // Create order lines for each appointment type/product
+      for (const type of appointmentTypes) {
+        if (type.product_id && Array.isArray(type.product_id) && type.product_id[0]) {
+          const productId = type.product_id[0];
+          
+          // Fetch product details to get price
+          const product = await this.executeKw(
+            "product.product",
+            "read",
+            [[productId]],
+            { fields: ["list_price", "name"] }
+          );
+
+          if (product && product.length > 0) {
+            const orderLineData = {
+              order_id: orderId,
+              product_id: productId,
+              product_uom_qty: 1.0,
+              price_unit: product[0].list_price || 0,
+            };
+
+            await this.executeKw(
+              "sale.order.line",
+              "create",
+              [orderLineData]
+            );
+
+            console.log(`[Odoo] Created order line for product: ${product[0].name}`);
+          }
+        } else {
+          console.warn(`[Odoo] Appointment type ${type.name} has no associated product`);
+        }
+      }
+
+      console.log(`[Odoo] Sales order ${orderId} created successfully with order lines`);
+      return orderId;
+    } catch (error) {
+      console.error("Failed to create sales order in Odoo:", error);
       throw error;
     }
   }
