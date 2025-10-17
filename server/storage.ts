@@ -342,8 +342,9 @@ export class MemStorage implements IStorage {
   async getAppointmentsByDateRange(startDate: Date, endDate: Date): Promise<Appointment[]> {
     return Array.from(this.appointments.values()).filter(
       appointment => 
-        appointment.startTime >= startDate && 
-        appointment.endTime <= endDate
+        // Appointment overlaps with the date range if it starts before range ends AND ends after range starts
+        appointment.startTime < endDate && 
+        appointment.endTime > startDate
     );
   }
 
