@@ -57,6 +57,10 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
   - Week view displays staff columns per day (Day | Staff1 | Staff2 | ... for each day)
   - Day view shows staff columns horizontally
   - Filtering persists across view mode changes
+  - **Important**: Appointments are filtered by staffId (which staff member is assigned), NOT by customer information
+    - Customer names may coincidentally match staff names (e.g., a customer named "Charlotte")
+    - When filtering to show only Kim's appointments, customers named "Charlotte" will still appear if those appointments are assigned to Kim
+    - Appointment cards display CUSTOMER name, service, and duration - not staff information
 - **Collapsible Appointment Details Panel**:
   - Panel can be collapsed to narrow strip (48px) with expand/collapse buttons
   - Smooth 300ms transition animation
