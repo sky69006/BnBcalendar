@@ -122,25 +122,25 @@
   background: hsl(220, 9%, 55%);
 }
 
-/* Appointment type colors */
+/* Appointment type colors - light grey for items without category */
 .apt-haircut {
-  background-color: hsl(262, 83%, 58%, 0.9);
-  border-left: 4px solid hsl(262, 83%, 58%);
+  background-color: hsl(220, 9%, 46%, 0.15);
+  border-left: 4px solid hsl(220, 9%, 46%);
 }
 
 .apt-color {
-  background-color: hsl(340, 82%, 52%, 0.9);
-  border-left: 4px solid hsl(340, 82%, 52%);
+  background-color: hsl(220, 9%, 46%, 0.15);
+  border-left: 4px solid hsl(220, 9%, 46%);
 }
 
 .apt-treatment {
-  background-color: hsl(174, 62%, 47%, 0.9);
-  border-left: 4px solid hsl(174, 62%, 47%);
+  background-color: hsl(220, 9%, 46%, 0.15);
+  border-left: 4px solid hsl(220, 9%, 46%);
 }
 
 .apt-consultation {
-  background-color: hsl(38, 92%, 50%, 0.9);
-  border-left: 4px solid hsl(38, 92%, 50%);
+  background-color: hsl(220, 9%, 46%, 0.15);
+  border-left: 4px solid hsl(220, 9%, 46%);
 }
 
 /* Availability indicators */
