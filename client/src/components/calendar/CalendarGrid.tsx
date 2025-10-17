@@ -189,7 +189,7 @@ export function CalendarGrid({
   const getAppointmentForSlot = useCallback((slotTime: Date, staffMember: Staff) => {
     return appointments.find(apt => {
       const aptStart = new Date(apt.startTime);
-      // Match by date, hour, and minute (not exact millisecond)
+      // Match by date, hour, and minute (not exact millisecond) and staff member
       return apt.staffId === staffMember.id && 
              isSameDay(aptStart, slotTime) &&
              aptStart.getHours() === slotTime.getHours() &&
@@ -518,9 +518,19 @@ export function CalendarGrid({
           
           {/* Day cells */}
           {monthDays.map(day => {
-            const dayAppointments = appointments.filter(apt => 
-              isSameDay(new Date(apt.startTime), day)
-            );
+            const dayAppointments = appointments.filter(apt => {
+              // Filter by day
+              if (!isSameDay(new Date(apt.startTime), day)) return false;
+              
+              // Filter by staff selection
+              if (selectedStaffIds.length > 0 && selectedStaffIds.length < allStaff.length) {
+                // Some staff are selected, filter to show only those
+                return apt.staffId && selectedStaffIds.includes(apt.staffId);
+              }
+              
+              // Show all appointments (no filter or all staff selected)
+              return true;
+            });
             const isToday = isSameDay(day, new Date());
             
             // For month view, use first available staff for booking

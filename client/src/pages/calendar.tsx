@@ -137,8 +137,8 @@ export default function CalendarPage() {
   return (
     <div className="flex h-screen flex-col">
       {/* Top Navigation Bar */}
-      <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-6">
+      <header className="bg-card border-b border-border px-6 py-4 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <CalendarIcon className="text-primary-foreground" size={20} />
@@ -148,9 +148,50 @@ export default function CalendarPage() {
               <p className="text-xs text-muted-foreground">Odoo Integration</p>
             </div>
           </div>
-          
-          {/* Date Navigation */}
-          <div className="flex items-center gap-2 ml-8">
+
+          <div className="flex items-center gap-3">
+            {/* FolderSync Status Indicator */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-muted-foreground text-sm">
+              <FolderSync 
+                className={cn("text-xs transition-transform", isSyncing && "animate-spin")} 
+                size={12} 
+              />
+              <span data-testid="text-sync-status">
+                {isSyncing ? "Syncing..." : `Synced ${formatLastSync(settings?.lastOdooSync ? String(settings.lastOdooSync) : null)}`}
+              </span>
+            </div>
+
+            {/* View Mode Switcher */}
+            <div className="flex items-center bg-muted rounded-lg p-1">
+              {(['day', 'week', 'month'] as ViewMode[]).map((mode) => (
+                <Button
+                  key={mode}
+                  variant={viewMode === mode ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode(mode)}
+                  className="capitalize"
+                  data-testid={`button-view-${mode}`}
+                >
+                  {mode}
+                </Button>
+              ))}
+            </div>
+
+            {/* Settings Button */}
+            <Button
+              variant="outline"
+              onClick={() => setShowSettings(!showSettings)}
+              data-testid="button-toggle-settings"
+            >
+              <Settings size={16} className="mr-2" />
+              Settings
+            </Button>
+          </div>
+        </div>
+
+        {/* Second Row: Date Navigation and Resource Filter */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -182,59 +223,20 @@ export default function CalendarPage() {
               <span data-testid="text-current-date">{formatDisplayDate()}</span>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          {/* FolderSync Status Indicator */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-muted-foreground text-sm">
-            <FolderSync 
-              className={cn("text-xs transition-transform", isSyncing && "animate-spin")} 
-              size={12} 
-            />
-            <span data-testid="text-sync-status">
-              {isSyncing ? "Syncing..." : `Synced ${formatLastSync(settings?.lastOdooSync ? String(settings.lastOdooSync) : null)}`}
-            </span>
-          </div>
-
-          {/* View Mode Switcher */}
-          <div className="flex items-center bg-muted rounded-lg p-1">
-            {(['day', 'week', 'month'] as ViewMode[]).map((mode) => (
-              <Button
-                key={mode}
-                variant={viewMode === mode ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode(mode)}
-                className="capitalize"
-                data-testid={`button-view-${mode}`}
-              >
-                {mode}
-              </Button>
-            ))}
-          </div>
-
-          {/* Settings Button */}
-          <Button
-            variant="outline"
-            onClick={() => setShowSettings(!showSettings)}
-            data-testid="button-toggle-settings"
-          >
-            <Settings size={16} className="mr-2" />
-            Settings
-          </Button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Staff Legend - Left Panel */}
-        <aside className="w-64 bg-card border-r border-border p-4 overflow-y-auto">
+          {/* Staff Legend - Horizontal */}
           <StaffLegend
             staff={staff}
             selectedStaffIds={selectedStaffIds}
             onStaffToggle={handleStaffToggle}
             onSelectAll={handleSelectAllStaff}
+            variant="horizontal"
           />
-        </aside>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
 
         {/* Calendar View */}
         <main className="flex-1 flex flex-col bg-background overflow-hidden">

@@ -51,7 +51,7 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
 - Sales order creation: When appointments are booked, sales orders are automatically created in Odoo with order lines for each selected service.
 - Category-based color coding: Appointments display in their Odoo appointment category color across all calendar views (day, week, month).
 - **Staff/Resource Filtering**: 
-  - Resources legend panel on left side with multi-select checkboxes for each staff member
+  - Resources filter in top navigation bar next to date navigation (horizontal layout)
   - "All" button to show all resources (empty selection = show all)
   - Individual checkboxes to filter specific staff members
   - Week view displays staff columns per day (Day | Staff1 | Staff2 | ... for each day)
