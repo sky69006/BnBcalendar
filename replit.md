@@ -66,9 +66,14 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
 - **Category Color System**: Visual appointment categorization using Odoo appointment categories:
   - Fetches appointment_category_id from calendar.event and color from appointment.category model during sync
   - Converts Odoo color indices (0-11) to hex colors using predefined palette
-  - Applies category color as background tint (20% opacity) and solid left border on appointment cards
+  - Applies category color as background tint (90% opacity) and solid left border on appointment cards
   - Falls back to service-based colors when no category color exists
   - Consistent color display across all calendar views (day, week, month)
+  - **Color Randomization**: One-click randomization of category colors in Settings panel:
+    - Assigns random colors from Odoo's 12-color palette to all categories
+    - Automatically triggers sync to fetch appointments with updated colors
+    - Category legend displays in Settings panel with real-time color swatches
+    - Immediate visual feedback via toast notifications
 
 # External Dependencies
 
