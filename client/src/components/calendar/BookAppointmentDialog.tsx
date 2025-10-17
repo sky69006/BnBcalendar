@@ -101,15 +101,15 @@ export function BookAppointmentDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/appointments"], exact: false });
       toast({
-        title: "Success",
-        description: "Appointment booked successfully!",
+        title: "Succesvol",
+        description: "Afspraak succesvol geboekt!",
       });
       handleClose();
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to book appointment",
+        title: "Fout",
+        description: error.message || "Kon afspraak niet boeken",
         variant: "destructive",
       });
     },
@@ -159,8 +159,8 @@ export function BookAppointmentDialog({
   const handleSubmit = () => {
     if (!customerName.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Customer name is required",
+        title: "Validatiefout",
+        description: "Klantnaam is verplicht",
         variant: "destructive",
       });
       return;
@@ -168,8 +168,8 @@ export function BookAppointmentDialog({
 
     if (selectedTypes.length === 0) {
       toast({
-        title: "Validation Error",
-        description: "Please select at least one appointment type",
+        title: "Validatiefout",
+        description: "Selecteer minimaal één type afspraak",
         variant: "destructive",
       });
       return;
@@ -177,8 +177,8 @@ export function BookAppointmentDialog({
 
     if (!selectedDate || !selectedTime || !selectedStaffId) {
       toast({
-        title: "Error",
-        description: "Please select a time slot on the calendar",
+        title: "Fout",
+        description: "Selecteer een tijdslot in de kalender",
         variant: "destructive",
       });
       return;
@@ -212,9 +212,9 @@ export function BookAppointmentDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Book New Appointment</DialogTitle>
+          <DialogTitle>Nieuwe Afspraak Boeken</DialogTitle>
           <DialogDescription>
-            Fill in customer information and select services to book an appointment
+            Vul klantgegevens in en selecteer diensten om een afspraak te boeken
           </DialogDescription>
         </DialogHeader>
 
@@ -242,11 +242,11 @@ export function BookAppointmentDialog({
 
             {/* Customer Information */}
             <div className="space-y-4">
-              <h3 className="font-semibold">Customer Information</h3>
+              <h3 className="font-semibold">Klantgegevens</h3>
               
               {/* Partner Selector */}
               <div className="space-y-2">
-                <Label>Select Existing Contact</Label>
+                <Label>Selecteer Bestaand Contact</Label>
                 <Popover open={partnerSearchOpen} onOpenChange={setPartnerSearchOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -258,21 +258,21 @@ export function BookAppointmentDialog({
                     >
                       {selectedPartnerId
                         ? partners.find((p) => p.id === selectedPartnerId)?.name
-                        : "Search for a contact..."}
+                        : "Zoek een contact..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0" align="start">
                     <Command shouldFilter={false}>
                       <CommandInput 
-                        placeholder="Search contacts..." 
+                        placeholder="Zoek contacten..." 
                         value={partnerSearchQuery}
                         onValueChange={setPartnerSearchQuery}
                         data-testid="input-search-partner"
                       />
                       <CommandList>
                         <CommandEmpty>
-                          {isLoadingPartners ? "Loading..." : "No contacts found."}
+                          {isLoadingPartners ? "Laden..." : "Geen contacten gevonden."}
                         </CommandEmpty>
                         <CommandGroup>
                           {partners.map((partner) => (
@@ -304,12 +304,12 @@ export function BookAppointmentDialog({
                   </PopoverContent>
                 </Popover>
                 <p className="text-xs text-muted-foreground">
-                  Or enter customer details manually below
+                  Of voer klantgegevens handmatig in
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customerName">Name *</Label>
+                <Label htmlFor="customerName">Naam *</Label>
                 <Input
                   id="customerName"
                   value={customerName}
@@ -317,13 +317,13 @@ export function BookAppointmentDialog({
                     setCustomerName(e.target.value);
                     setSelectedPartnerId(null);
                   }}
-                  placeholder="Enter customer name"
+                  placeholder="Voer klantnaam in"
                   data-testid="input-customer-name"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customerEmail">Email</Label>
+                <Label htmlFor="customerEmail">E-mail</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -339,7 +339,7 @@ export function BookAppointmentDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customerPhone">Phone</Label>
+                <Label htmlFor="customerPhone">Telefoon</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -347,7 +347,7 @@ export function BookAppointmentDialog({
                     type="tel"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    placeholder="+1 234 567 8900"
+                    placeholder="+32 123 456 789"
                     className="pl-10"
                     data-testid="input-customer-phone"
                   />
@@ -358,10 +358,10 @@ export function BookAppointmentDialog({
             {/* Appointment Types Selection */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Select Services</h3>
+                <h3 className="font-semibold">Selecteer Diensten</h3>
                 {totalDuration > 0 && (
                   <span className="text-sm text-muted-foreground">
-                    Total: {totalHours > 0 && `${totalHours}h `}{totalMinutes > 0 && `${totalMinutes}min`}
+                    Totaal: {totalHours > 0 && `${totalHours}u `}{totalMinutes > 0 && `${totalMinutes}min`}
                   </span>
                 )}
               </div>
@@ -372,8 +372,8 @@ export function BookAppointmentDialog({
                 </div>
               ) : compatibleAppointmentTypes.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No services available for {selectedStaffName || 'this staff member'}.</p>
-                  <p className="text-sm mt-2">Please select a different time slot.</p>
+                  <p>Geen diensten beschikbaar voor {selectedStaffName || 'deze medewerker'}.</p>
+                  <p className="text-sm mt-2">Selecteer een ander tijdslot.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -412,7 +412,7 @@ export function BookAppointmentDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} data-testid="button-cancel-booking">
-            Cancel
+            Annuleren
           </Button>
           <Button
             onClick={handleSubmit}
@@ -422,10 +422,10 @@ export function BookAppointmentDialog({
             {createAppointmentMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Booking...
+                Boeken...
               </>
             ) : (
-              `Book ${selectedTypes.length > 0 ? `${selectedTypes.length} Service${selectedTypes.length > 1 ? 's' : ''}` : 'Appointment'}`
+              `Boek ${selectedTypes.length > 0 ? `${selectedTypes.length} Dienst${selectedTypes.length > 1 ? 'en' : ''}` : 'Afspraak'}`
             )}
           </Button>
         </DialogFooter>
