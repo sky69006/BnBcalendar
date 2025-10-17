@@ -14,13 +14,15 @@ interface CalendarGridProps {
   viewMode: ViewMode;
   onAppointmentSelect: (appointment: Appointment) => void;
   selectedAppointment?: Appointment | null;
+  selectedStaffIds?: string[];
 }
 
 export function CalendarGrid({ 
   currentDate,
   viewMode,
   onAppointmentSelect, 
-  selectedAppointment 
+  selectedAppointment,
+  selectedStaffIds = []
 }: CalendarGridProps) {
   const queryClient = useQueryClient();
   const [draggedAppointment, setDraggedAppointment] = useState<Appointment | null>(null);
@@ -41,9 +43,17 @@ export function CalendarGrid({
     return () => clearInterval(interval);
   }, []);
 
-  const { data: staff = [] } = useQuery<Staff[]>({
+  const { data: allStaff = [] } = useQuery<Staff[]>({
     queryKey: ["/api/staff"],
   });
+
+  // Filter staff based on selection (if no staff selected, show all)
+  const staff = useMemo(() => {
+    if (selectedStaffIds.length === 0) {
+      return allStaff;
+    }
+    return allStaff.filter(s => selectedStaffIds.includes(s.id));
+  }, [allStaff, selectedStaffIds]);
 
   const { data: settings } = useQuery<CalendarSettings>({
     queryKey: ["/api/settings"],
@@ -406,66 +416,74 @@ export function CalendarGrid({
                   </div>
                 )}
 
-                {/* Week view: Day columns */}
+                {/* Week view: Staff columns per day */}
                 {viewMode === 'week' && (
                   <div className="flex flex-1">
-                    {displayDays.map((day, dayIndex) => {
-                      // Create the exact datetime for this slot
-                      const slotDateTime = new Date(day);
-                      slotDateTime.setHours(slotTime.getHours(), slotTime.getMinutes(), 0, 0);
-                      
-                      // Find appointment that starts at this exact time slot
-                      const appointment = appointments.find(apt => {
-                        const aptStart = new Date(apt.startTime);
-                        const aptStartLocal = new Date(aptStart);
-                        return isSameDay(aptStartLocal, day) &&
-                               aptStartLocal.getHours() === slotTime.getHours() && 
-                               aptStartLocal.getMinutes() === slotTime.getMinutes();
-                      });
-                      
-                      const aptStaff = appointment ? staff.find(s => s.id === appointment.staffId) : undefined;
-                      
-                      // Calculate appointment height based on duration
-                      const interval = settings?.timeInterval || 15;
-                      const slotHeightPx = 60; // Each slot is 60px tall
-                      const appointmentHeight = appointment 
-                        ? (appointment.duration / interval) * slotHeightPx 
-                        : 0;
-                      
-                      // In week view, we need to pick a staff member for booking
-                      // Use the first available staff member for the slot
-                      const availableStaff = staff.find(s => s.id) || staff[0];
-                      
-                      return (
-                        <div
-                          key={day.toISOString()}
-                          className={cn(
-                            "flex-1 time-slot relative min-h-[60px] transition-colors",
-                            dayIndex < displayDays.length - 1 && "border-r border-border",
-                            !appointment && "availability-available hover:bg-primary/5 cursor-pointer"
-                          )}
-                          onClick={() => !appointment && availableStaff && handleSlotClick(slotDateTime, availableStaff)}
-                          data-testid={`time-slot-${format(day, 'yyyy-MM-dd')}-${format(slotTime, 'HH-mm')}`}
-                        >
-                          {appointment && aptStaff && (
-                            <div 
-                              className="absolute inset-0 z-10"
-                              style={{ height: `${appointmentHeight}px` }}
-                            >
-                              <AppointmentCard
-                                appointment={appointment}
-                                staff={aptStaff}
-                                onDragStart={handleDragStart}
-                                onDragEnd={handleDragEnd}
-                                onClick={onAppointmentSelect}
-                                isDragging={draggedAppointment?.id === appointment.id}
-                                isSelected={selectedAppointment?.id === appointment.id}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                    {displayDays.map((day, dayIndex) => (
+                      <div key={day.toISOString()} className="flex flex-1">
+                        {staff.length > 0 ? (
+                          staff.map((staffMember, staffIndex) => {
+                            // Create the exact datetime for this slot on this day
+                            const slotDateTime = new Date(day);
+                            slotDateTime.setHours(slotTime.getHours(), slotTime.getMinutes(), 0, 0);
+                            
+                            const appointment = getAppointmentForSlot(slotDateTime, staffMember);
+                            const isBusy = !appointment && isSlotBusy(slotDateTime, staffMember);
+                            const isAvailable = isStaffAvailable(slotDateTime, staffMember);
+                            
+                            // Calculate appointment height based on duration
+                            const interval = settings?.timeInterval || 15;
+                            const slotHeightPx = 60;
+                            const appointmentHeight = appointment 
+                              ? (appointment.duration / interval) * slotHeightPx 
+                              : 0;
+                            
+                            const isLastStaffInDay = staffIndex === staff.length - 1;
+                            const isLastDay = dayIndex === displayDays.length - 1;
+                            
+                            return (
+                              <div
+                                key={`${day.toISOString()}-${staffMember.id}`}
+                                className={cn(
+                                  "flex-1 time-slot relative min-h-[60px] transition-colors",
+                                  !isLastStaffInDay && "border-r border-border/50",
+                                  isLastStaffInDay && !isLastDay && "border-r-2 border-border",
+                                  isBusy && "availability-busy bg-red-50/30",
+                                  !isAvailable && !appointment && "availability-unavailable bg-muted/40",
+                                  !appointment && !isBusy && isAvailable && "availability-available hover:bg-primary/5",
+                                  !appointment && !isBusy && "cursor-pointer"
+                                )}
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, slotDateTime, staffMember)}
+                                onClick={() => !appointment && !isBusy && handleSlotClick(slotDateTime, staffMember)}
+                                data-testid={`time-slot-week-${format(day, 'yyyy-MM-dd')}-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
+                              >
+                                {appointment && (
+                                  <div 
+                                    className="absolute inset-0 z-10"
+                                    style={{ height: `${appointmentHeight}px` }}
+                                  >
+                                    <AppointmentCard
+                                      appointment={appointment}
+                                      staff={staffMember}
+                                      onDragStart={handleDragStart}
+                                      onDragEnd={handleDragEnd}
+                                      onClick={onAppointmentSelect}
+                                      isDragging={draggedAppointment?.id === appointment.id}
+                                      isSelected={selectedAppointment?.id === appointment.id}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+                            Loading staff...
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

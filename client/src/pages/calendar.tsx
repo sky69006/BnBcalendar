@@ -244,30 +244,39 @@ export default function CalendarPage() {
                   </div>
                 ))}
 
-                {/* Week View: Day Columns */}
+                {/* Week View: Day + Staff Columns */}
                 {viewMode === 'week' && (() => {
                   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
                   return Array.from({ length: 7 }).map((_, i) => {
                     const day = addDays(weekStart, i);
                     const isToday = isSameDay(day, new Date());
                     return (
-                      <div
-                        key={day.toISOString()}
-                        className={cn(
-                          "flex-1 px-4 py-3 text-center",
-                          i < 6 && "border-r border-border",
-                          isToday && "bg-primary/5"
-                        )}
-                      >
-                        <div className="font-semibold text-foreground">
-                          {format(day, 'EEE')}
-                        </div>
-                        <div className={cn(
-                          "text-sm",
-                          isToday ? "text-primary font-bold" : "text-muted-foreground"
-                        )}>
-                          {format(day, 'MMM d')}
-                        </div>
+                      <div key={day.toISOString()} className="flex flex-1">
+                        {staff.map((staffMember, staffIndex) => {
+                          const isLastStaffInDay = staffIndex === staff.length - 1;
+                          const isLastDay = i === 6;
+                          return (
+                            <div
+                              key={`${day.toISOString()}-${staffMember.id}`}
+                              className={cn(
+                                "flex-1 px-2 py-3 text-center",
+                                !isLastStaffInDay && "border-r border-border/50",
+                                isLastStaffInDay && !isLastDay && "border-r-2 border-border",
+                                isToday && "bg-primary/5"
+                              )}
+                            >
+                              <div className="text-xs font-semibold text-foreground truncate">
+                                {format(day, 'EEE')}
+                              </div>
+                              <div className={cn(
+                                "text-xs truncate",
+                                isToday ? "text-primary font-bold" : "text-muted-foreground"
+                              )}>
+                                {staffMember.name}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   });
