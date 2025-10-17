@@ -65,6 +65,8 @@ export class MemStorage implements IStorage {
         role: "Senior Stylist",
         color: "#8b5cf6",
         isActive: true,
+        resourceCalendarId: null,
+        workingHours: null,
         createdAt: new Date(),
       },
       {
@@ -75,6 +77,8 @@ export class MemStorage implements IStorage {
         role: "Hair Specialist",
         color: "#14b8a6",
         isActive: true,
+        resourceCalendarId: null,
+        workingHours: null,
         createdAt: new Date(),
       },
       {
@@ -85,6 +89,8 @@ export class MemStorage implements IStorage {
         role: "Color Expert",
         color: "#f59e0b",
         isActive: true,
+        resourceCalendarId: null,
+        workingHours: null,
         createdAt: new Date(),
       },
       {
@@ -95,6 +101,8 @@ export class MemStorage implements IStorage {
         role: "Junior Stylist",
         color: "#ec4899",
         isActive: true,
+        resourceCalendarId: null,
+        workingHours: null,
         createdAt: new Date(),
       },
     ];
@@ -126,6 +134,7 @@ export class MemStorage implements IStorage {
         status: "confirmed",
         price: "$45",
         notes: "Regular customer, prefers short layers",
+        categoryColor: null,
         lastSynced: new Date(),
       },
       {
@@ -143,6 +152,7 @@ export class MemStorage implements IStorage {
         status: "confirmed",
         price: "$120",
         notes: "Full color treatment with highlights",
+        categoryColor: null,
         lastSynced: new Date(),
       },
       // Mike's appointments
@@ -161,6 +171,7 @@ export class MemStorage implements IStorage {
         status: "confirmed",
         price: "$35",
         notes: null,
+        categoryColor: null,
         lastSynced: new Date(),
       },
       {
@@ -178,6 +189,7 @@ export class MemStorage implements IStorage {
         status: "confirmed",
         price: "$65",
         notes: "Deep conditioning treatment",
+        categoryColor: null,
         lastSynced: new Date(),
       },
       // Lisa's appointments
@@ -196,6 +208,7 @@ export class MemStorage implements IStorage {
         status: "confirmed",
         price: "$20",
         notes: "First-time customer consultation",
+        categoryColor: null,
         lastSynced: new Date(),
       },
       {
@@ -213,6 +226,7 @@ export class MemStorage implements IStorage {
         status: "confirmed",
         price: "$150",
         notes: "Balayage with toner",
+        categoryColor: null,
         lastSynced: new Date(),
       },
       // Jenny's appointments
@@ -231,6 +245,7 @@ export class MemStorage implements IStorage {
         status: "confirmed",
         price: "$30",
         notes: null,
+        categoryColor: null,
         lastSynced: new Date(),
       },
       {
@@ -248,6 +263,7 @@ export class MemStorage implements IStorage {
         status: "confirmed",
         price: "$50",
         notes: "Special occasion styling",
+        categoryColor: null,
         lastSynced: new Date(),
       },
     ];
@@ -296,6 +312,8 @@ export class MemStorage implements IStorage {
       email: insertStaff.email ?? null,
       color: insertStaff.color ?? "#6366f1",
       isActive: insertStaff.isActive ?? true,
+      resourceCalendarId: insertStaff.resourceCalendarId ?? null,
+      workingHours: insertStaff.workingHours ?? null,
       id,
       createdAt: new Date()
     };
@@ -346,6 +364,7 @@ export class MemStorage implements IStorage {
       staffId: insertAppointment.staffId ?? null,
       price: insertAppointment.price ?? null,
       notes: insertAppointment.notes ?? null,
+      categoryColor: insertAppointment.categoryColor ?? null,
       status: insertAppointment.status ?? "confirmed",
       id,
       lastSynced: new Date()

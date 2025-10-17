@@ -37,6 +37,7 @@ export const appointments = pgTable("appointments", {
   status: text("status").notNull().default("confirmed"), // confirmed, cancelled, completed
   price: text("price"),
   notes: text("notes"),
+  categoryColor: text("category_color"), // hex color from appointment category
   lastSynced: timestamp("last_synced").defaultNow(),
 });
 
