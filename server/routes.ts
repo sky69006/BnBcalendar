@@ -395,6 +395,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update category colors route
+  app.post("/api/appointment-categories/randomize-colors", async (req, res) => {
+    try {
+      const result = await odooService.assignRandomColorsToCategories();
+      res.json(result);
+    } catch (error) {
+      console.error("Failed to update category colors:", error);
+      res.status(500).json({ 
+        error: "Failed to update category colors",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Partners route
   app.get("/api/partners", async (req, res) => {
     try {
