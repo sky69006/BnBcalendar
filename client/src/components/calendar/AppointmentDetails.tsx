@@ -51,6 +51,9 @@ export function AppointmentDetails({
 
   const appointmentStaff = staff.find(s => s.id === appointment.staffId);
   
+  // Find the category for this appointment
+  const appointmentCategory = categories.find(cat => cat.color === appointment.categoryColor);
+  
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -80,6 +83,24 @@ export function AppointmentDetails({
         return 'bg-muted text-muted-foreground';
     }
   };
+  
+  // Get category color for display
+  const getCategoryColor = (colorIndex: string | null): string | null => {
+    if (!colorIndex) return null;
+    
+    const odooColors = [
+      '#F06050', '#F4A460', '#F7CD1F', '#6CC1ED', 
+      '#814968', '#EB7E7F', '#2C8397', '#475577', 
+      '#D6145F', '#30C381', '#9365B8', '#808080'
+    ];
+    
+    const index = parseInt(colorIndex);
+    return !isNaN(index) && index >= 0 && index < odooColors.length 
+      ? odooColors[index] 
+      : colorIndex;
+  };
+  
+  const categoryColor = appointment.categoryColor ? getCategoryColor(appointment.categoryColor) : null;
 
   return (
     <div className="p-6">
@@ -127,6 +148,21 @@ export function AppointmentDetails({
               <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <span className="text-foreground">
                 {appointmentStaff.name}
+              </span>
+            </div>
+          )}
+          
+          {appointmentCategory && (
+            <div className="flex items-center gap-3 text-sm">
+              <div 
+                className="w-4 h-4 rounded border-l-4 flex-shrink-0" 
+                style={{ 
+                  borderColor: categoryColor || '#808080', 
+                  backgroundColor: `${categoryColor || '#808080'}20` 
+                }}
+              />
+              <span className="text-foreground">
+                {appointmentCategory.name}
               </span>
             </div>
           )}
@@ -211,29 +247,6 @@ export function AppointmentDetails({
             --
           </div>
           <div className="text-xs text-muted-foreground">Available Slots</div>
-        </div>
-      </div>
-
-      {/* Color Legend */}
-      <div className="mt-6 pt-6 border-t border-border">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Service Types</h3>
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded border-l-4 border-primary bg-primary/10"></div>
-            <span className="text-sm text-foreground">Haircut & Styling</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded border-l-4 border-destructive bg-destructive/10"></div>
-            <span className="text-sm text-foreground">Hair Coloring</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded border-l-4 border-secondary bg-secondary/10"></div>
-            <span className="text-sm text-foreground">Treatments</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded border-l-4 border-accent bg-accent/10"></div>
-            <span className="text-sm text-foreground">Consultation</span>
-          </div>
         </div>
       </div>
 
