@@ -6,6 +6,7 @@ import { SettingsPanel } from "@/components/calendar/SettingsPanel";
 import { AppointmentDetails } from "@/components/calendar/AppointmentDetails";
 import { RescheduleDialog } from "@/components/calendar/RescheduleDialog";
 import { CancelAppointmentDialog } from "@/components/calendar/CancelAppointmentDialog";
+import { StaffLegend } from "@/components/calendar/StaffLegend";
 import { useOdooSync } from "@/hooks/useOdooSync";
 import { 
   Calendar as CalendarIcon, 
@@ -28,6 +29,7 @@ export default function CalendarPage() {
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [detailsPanelCollapsed, setDetailsPanelCollapsed] = useState(false);
+  const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
 
   const { syncWithOdoo, isSyncing, syncResult, syncError } = useOdooSync();
 
@@ -103,6 +105,37 @@ export default function CalendarPage() {
     if (diffMinutes < 1) return "Just now";
     if (diffMinutes < 60) return `${diffMinutes} min ago`;
     return `${Math.floor(diffMinutes / 60)} hours ago`;
+  };
+
+  // Staff filtering handlers
+  const handleStaffToggle = (staffId: string) => {
+    setSelectedStaffIds(prev => {
+      if (prev.length === 0) {
+        // If none selected (all showing), select all except this one
+        return staff.filter(s => s.id !== staffId).map(s => s.id);
+      }
+      if (prev.includes(staffId)) {
+        // Remove from selection
+        const newSelection = prev.filter(id => id !== staffId);
+        // If removing the last one, show all (empty array)
+        return newSelection.length === 0 ? [] : newSelection;
+      } else {
+        // Add to selection
+        const newSelection = [...prev, staffId];
+        // If all are now selected, show all (empty array)
+        return newSelection.length === staff.length ? [] : newSelection;
+      }
+    });
+  };
+
+  const handleSelectAllStaff = () => {
+    setSelectedStaffIds([]);
+  };
+
+  const handleDeselectAllStaff = () => {
+    if (staff.length > 0) {
+      setSelectedStaffIds([staff[0].id]);
+    }
   };
 
   return (
@@ -197,6 +230,17 @@ export default function CalendarPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Staff Legend - Left Panel */}
+        <aside className="w-64 bg-card border-r border-border p-4 overflow-y-auto">
+          <StaffLegend
+            staff={staff}
+            selectedStaffIds={selectedStaffIds}
+            onStaffToggle={handleStaffToggle}
+            onSelectAll={handleSelectAllStaff}
+            onDeselectAll={handleDeselectAllStaff}
+          />
+        </aside>
+
         {/* Calendar View */}
         <main className="flex-1 flex flex-col bg-background overflow-hidden">
           {/* Calendar Header - Day and Week Views Only */}
@@ -209,78 +253,90 @@ export default function CalendarPage() {
                 </div>
                 
                 {/* Day View: Staff Member Columns */}
-                {viewMode === 'day' && staff.map((staffMember, index) => (
-                  <div 
-                    key={staffMember.id}
-                    className={cn(
-                      "flex-1 px-4 py-3",
-                      index < staff.length - 1 && "border-r border-border",
-                      `border-l-3 border-l-[${staffMember.color}]`
-                    )}
-                    style={{ borderLeftColor: staffMember.color }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                {viewMode === 'day' && (
+                  <>
+                    {(() => {
+                      const displayStaff = selectedStaffIds.length === 0 ? staff : staff.filter(s => selectedStaffIds.includes(s.id));
+                      return displayStaff.map((staffMember, index) => (
                         <div 
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
-                          style={{ 
-                            background: `linear-gradient(135deg, ${staffMember.color}CC, ${staffMember.color})` 
-                          }}
+                          key={staffMember.id}
+                          className={cn(
+                            "flex-1 px-4 py-3",
+                            index < displayStaff.length - 1 && "border-r border-border",
+                            `border-l-3 border-l-[${staffMember.color}]`
+                          )}
+                          style={{ borderLeftColor: staffMember.color }}
                         >
-                          {staffMember.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-foreground">{staffMember.name}</h3>
-                          <p className="text-xs text-muted-foreground">{staffMember.role}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 bg-accent/10 text-accent text-xs font-medium rounded">
-                          -- booked
-                        </span>
-                        <div className="w-2 h-2 rounded-full bg-green-500" title="Available"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Week View: Day + Staff Columns */}
-                {viewMode === 'week' && (() => {
-                  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-                  return Array.from({ length: 7 }).map((_, i) => {
-                    const day = addDays(weekStart, i);
-                    const isToday = isSameDay(day, new Date());
-                    return (
-                      <div key={day.toISOString()} className="flex flex-1">
-                        {staff.map((staffMember, staffIndex) => {
-                          const isLastStaffInDay = staffIndex === staff.length - 1;
-                          const isLastDay = i === 6;
-                          return (
-                            <div
-                              key={`${day.toISOString()}-${staffMember.id}`}
-                              className={cn(
-                                "flex-1 px-2 py-3 text-center",
-                                !isLastStaffInDay && "border-r border-border/50",
-                                isLastStaffInDay && !isLastDay && "border-r-2 border-border",
-                                isToday && "bg-primary/5"
-                              )}
-                            >
-                              <div className="text-xs font-semibold text-foreground truncate">
-                                {format(day, 'EEE')}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                                style={{ 
+                                  background: `linear-gradient(135deg, ${staffMember.color}CC, ${staffMember.color})` 
+                                }}
+                              >
+                                {staffMember.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                               </div>
-                              <div className={cn(
-                                "text-xs truncate",
-                                isToday ? "text-primary font-bold" : "text-muted-foreground"
-                              )}>
-                                {staffMember.name}
+                              <div>
+                                <h3 className="font-semibold text-foreground">{staffMember.name}</h3>
+                                <p className="text-xs text-muted-foreground">{staffMember.role}</p>
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  });
-                })()}
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-1 bg-accent/10 text-accent text-xs font-medium rounded">
+                                -- booked
+                              </span>
+                              <div className="w-2 h-2 rounded-full bg-green-500" title="Available"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </>
+                )}
+
+                {/* Week View: Day + Staff Columns */}
+                {viewMode === 'week' && (
+                  <>
+                    {(() => {
+                      const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+                      const displayStaff = selectedStaffIds.length === 0 ? staff : staff.filter(s => selectedStaffIds.includes(s.id));
+                      return Array.from({ length: 7 }).map((_, i) => {
+                        const day = addDays(weekStart, i);
+                        const isToday = isSameDay(day, new Date());
+                        return (
+                          <div key={day.toISOString()} className="flex flex-1">
+                            {displayStaff.map((staffMember, staffIndex) => {
+                              const isLastStaffInDay = staffIndex === displayStaff.length - 1;
+                              const isLastDay = i === 6;
+                              return (
+                                <div
+                                  key={`${day.toISOString()}-${staffMember.id}`}
+                                  className={cn(
+                                    "flex-1 px-2 py-3 text-center",
+                                    !isLastStaffInDay && "border-r border-border/50",
+                                    isLastStaffInDay && !isLastDay && "border-r-2 border-border",
+                                    isToday && "bg-primary/5"
+                                  )}
+                                >
+                                  <div className="text-xs font-semibold text-foreground truncate">
+                                    {format(day, 'EEE')}
+                                  </div>
+                                  <div className={cn(
+                                    "text-xs truncate",
+                                    isToday ? "text-primary font-bold" : "text-muted-foreground"
+                                  )}>
+                                    {staffMember.name}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -291,6 +347,7 @@ export default function CalendarPage() {
             viewMode={viewMode}
             onAppointmentSelect={setSelectedAppointment}
             selectedAppointment={selectedAppointment}
+            selectedStaffIds={selectedStaffIds}
           />
         </main>
 
