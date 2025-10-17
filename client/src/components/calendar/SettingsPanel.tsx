@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, Calendar, Users, Settings, FolderSync, X, CalendarDays, CalendarX } from "lucide-react";
+import { Clock, Calendar, Users, Settings, FolderSync, X, CalendarDays, CalendarX, Palette } from "lucide-react";
 import { useOdooSync } from "@/hooks/useOdooSync";
 import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import type { CalendarSettings, Staff } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const DAYS_OF_WEEK = [
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const queryClient = useQueryClient();
   const { syncWithOdoo, isSyncing, syncResult, syncError } = useOdooSync();
+  const { toast } = useToast();
 
   const { data: settings } = useQuery<CalendarSettings>({
     queryKey: ["/api/settings"],
@@ -38,6 +40,28 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   });
 
   const [localSettings, setLocalSettings] = useState<Partial<CalendarSettings>>({});
+
+  const randomizeColorsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/appointment-categories/randomize-colors", {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Colors Updated!",
+        description: `Successfully updated ${data.updated} category colors in Odoo`,
+      });
+      // Invalidate appointments to refresh with new colors
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update category colors",
+        variant: "destructive",
+      });
+    },
+  });
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (updates: Partial<CalendarSettings>) => {
@@ -241,6 +265,17 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           >
             <FolderSync className={cn("transition-transform", isSyncing && "animate-spin")} size={16} />
             {isSyncing ? "Syncing..." : "Sync with Odoo Now"}
+          </Button>
+          
+          <Button
+            className="w-full flex items-center justify-center gap-2 mt-3"
+            variant="outline"
+            onClick={() => randomizeColorsMutation.mutate()}
+            disabled={randomizeColorsMutation.isPending}
+            data-testid="button-randomize-colors"
+          >
+            <Palette size={16} />
+            {randomizeColorsMutation.isPending ? "Updating..." : "Randomize Category Colors"}
           </Button>
           
           <div className="mt-2 text-center">
