@@ -49,6 +49,7 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
 - Multi-service booking: selecting multiple services creates ONE combined appointment (not separate appointments).
 - Click-to-create appointments: works in all view modes (Day, Week, Month) by clicking empty slots/cells.
 - Sales order creation: When appointments are booked, sales orders are automatically created in Odoo with order lines for each selected service.
+- Category-based color coding: Appointments display in their Odoo appointment category color across all calendar views (day, week, month).
 
 ## Technical Implementations
 - Client-side filtering of services based on Odoo resource constraints to prevent booking errors.
@@ -62,6 +63,12 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
   - Order line generation: Creates order lines for all selected services with proper product references
   - Error handling: Sales order failures don't block appointment creation (graceful degradation)
 - **Partner Search**: Custom queryFn implementation to pass search query parameter to backend API correctly.
+- **Category Color System**: Visual appointment categorization using Odoo appointment categories:
+  - Fetches appointment_category_id from calendar.event and color from appointment.category model during sync
+  - Converts Odoo color indices (0-11) to hex colors using predefined palette
+  - Applies category color as background tint (20% opacity) and solid left border on appointment cards
+  - Falls back to service-based colors when no category color exists
+  - Consistent color display across all calendar views (day, week, month)
 
 # External Dependencies
 
