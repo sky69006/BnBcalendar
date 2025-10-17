@@ -66,7 +66,7 @@ export function AppointmentDetails({
     return (
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-foreground">Appointment Details</h2>
+          <h2 className="text-lg font-bold text-foreground">Afspraak Details</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -77,7 +77,7 @@ export function AppointmentDetails({
           </Button>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
-          Click on an appointment to view details
+          Klik op een afspraak om details te bekijken
         </p>
       </div>
     );
@@ -89,15 +89,15 @@ export function AppointmentDetails({
   const appointmentCategory = categories.find(cat => cat.color === appointment.categoryColor);
   
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString('nl-NL', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: false
     });
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('nl-NL', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -139,7 +139,7 @@ export function AppointmentDetails({
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-foreground">Appointment Details</h2>
+        <h2 className="text-lg font-bold text-foreground">Afspraak Details</h2>
         <Button
           variant="ghost"
           size="sm"
@@ -183,7 +183,7 @@ export function AppointmentDetails({
           <div className="flex items-center gap-3 text-sm">
             <Hourglass className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <span className="text-foreground">
-              {appointment.duration} minutes
+              {appointment.duration} minuten
             </span>
           </div>
           
@@ -234,7 +234,7 @@ export function AppointmentDetails({
           <>
             <Separator className="my-4" />
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Service Price</span>
+              <span className="text-muted-foreground">Service Prijs</span>
               <span className="font-semibold text-foreground">{appointment.price}</span>
             </div>
           </>
@@ -244,7 +244,7 @@ export function AppointmentDetails({
           <>
             <Separator className="my-4" />
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Notes</p>
+              <p className="text-xs text-muted-foreground mb-1">Notities</p>
               <div 
                 className="text-sm text-foreground prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: appointment.notes }}
@@ -262,7 +262,7 @@ export function AppointmentDetails({
             data-testid="button-reschedule-appointment"
           >
             <CalendarPlus className="mr-2 h-4 w-4" />
-            Reschedule
+            Verplaatsen
           </Button>
           
           <Button
@@ -273,7 +273,7 @@ export function AppointmentDetails({
             data-testid="button-cancel-appointment"
           >
             <XCircle className="mr-2 h-4 w-4" />
-            Cancel Appointment
+            Afspraak Annuleren
           </Button>
         </div>
       </div>
@@ -284,20 +284,20 @@ export function AppointmentDetails({
           <div className="text-2xl font-bold text-primary mb-1" data-testid="stat-todays-bookings">
             --
           </div>
-          <div className="text-xs text-muted-foreground">Today's Bookings</div>
+          <div className="text-xs text-muted-foreground">Afspraken Vandaag</div>
         </div>
         <div className="bg-secondary/5 rounded-lg p-4 border border-secondary/20">
           <div className="text-2xl font-bold text-secondary mb-1" data-testid="stat-available-slots">
             --
           </div>
-          <div className="text-xs text-muted-foreground">Available Slots</div>
+          <div className="text-xs text-muted-foreground">Beschikbare Slots</div>
         </div>
       </div>
 
       {/* Category Colors Legend */}
       {categories.length > 0 && (
         <div className="mt-6 pt-6 border-t border-border">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Category Colors</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-3">Categorie Kleuren</h3>
           <div className="grid grid-cols-2 gap-2">
             {categories.map((category) => {
               // Convert Odoo color index to hex
