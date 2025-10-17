@@ -294,45 +294,82 @@ export default function CalendarPage() {
 
                 {/* Week View: Day + Staff Columns */}
                 {viewMode === 'week' && (
-                  <>
-                    {(() => {
-                      const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-                      const displayStaff = selectedStaffIds.length === 0 ? staff : staff.filter(s => selectedStaffIds.includes(s.id));
-                      return Array.from({ length: 7 }).map((_, i) => {
-                        const day = addDays(weekStart, i);
-                        const isToday = isSameDay(day, new Date());
-                        return (
-                          <div key={day.toISOString()} className="flex flex-1">
-                            {displayStaff.map((staffMember, staffIndex) => {
-                              const isLastStaffInDay = staffIndex === displayStaff.length - 1;
-                              const isLastDay = i === 6;
-                              return (
-                                <div
-                                  key={`${day.toISOString()}-${staffMember.id}`}
-                                  className={cn(
-                                    "flex-1 px-2 py-3 text-center",
-                                    !isLastStaffInDay && "border-r border-border/50",
-                                    isLastStaffInDay && !isLastDay && "border-r-2 border-border",
-                                    isToday && "bg-primary/5"
-                                  )}
-                                >
-                                  <div className="text-xs font-semibold text-foreground truncate">
-                                    {format(day, 'EEE')}
+                  <div className="flex flex-1 flex-col">
+                    {/* Row 1: Day names */}
+                    <div className="flex flex-1 border-b border-border">
+                      {(() => {
+                        const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+                        const displayStaff = selectedStaffIds.length === 0 ? staff : staff.filter(s => selectedStaffIds.includes(s.id));
+                        const staffCount = displayStaff.length || 1;
+                        
+                        return Array.from({ length: 7 }).map((_, i) => {
+                          const day = addDays(weekStart, i);
+                          const isToday = isSameDay(day, new Date());
+                          const isLastDay = i === 6;
+                          
+                          return (
+                            <div 
+                              key={day.toISOString()} 
+                              className={cn(
+                                "flex items-center justify-center py-2",
+                                !isLastDay && "border-r-2 border-border",
+                                isToday && "bg-primary/5"
+                              )}
+                              style={{ flex: staffCount }}
+                            >
+                              <div className={cn(
+                                "text-sm font-semibold",
+                                isToday ? "text-primary" : "text-foreground"
+                              )}>
+                                {format(day, 'EEE')}
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                    
+                    {/* Row 2: Staff names */}
+                    <div className="flex flex-1">
+                      {(() => {
+                        const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+                        const displayStaff = selectedStaffIds.length === 0 ? staff : staff.filter(s => selectedStaffIds.includes(s.id));
+                        
+                        return Array.from({ length: 7 }).map((_, i) => {
+                          const day = addDays(weekStart, i);
+                          const isToday = isSameDay(day, new Date());
+                          const isLastDay = i === 6;
+                          
+                          return (
+                            <div key={`staff-${day.toISOString()}`} className="flex flex-1">
+                              {displayStaff.map((staffMember, staffIndex) => {
+                                const isLastStaffInDay = staffIndex === displayStaff.length - 1;
+                                
+                                return (
+                                  <div
+                                    key={`${day.toISOString()}-${staffMember.id}`}
+                                    className={cn(
+                                      "flex-1 px-2 py-2 text-center",
+                                      !isLastStaffInDay && "border-r border-border/50",
+                                      isLastStaffInDay && !isLastDay && "border-r-2 border-border",
+                                      isToday && "bg-primary/5"
+                                    )}
+                                  >
+                                    <div className={cn(
+                                      "text-xs truncate",
+                                      isToday ? "text-primary font-semibold" : "text-muted-foreground"
+                                    )}>
+                                      {staffMember.name}
+                                    </div>
                                   </div>
-                                  <div className={cn(
-                                    "text-xs truncate",
-                                    isToday ? "text-primary font-bold" : "text-muted-foreground"
-                                  )}>
-                                    {staffMember.name}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      });
-                    })()}
-                  </>
+                                );
+                              })}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
