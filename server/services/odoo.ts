@@ -434,10 +434,9 @@ export class OdooService {
         date_order: this.formatDateForOdoo(new Date()),
       };
 
-      // Link to calendar event if provided
-      if (data.calendarEventId) {
-        orderData.calendar_event_id = data.calendarEventId;
-      }
+      // Note: calendar_event_id is not a standard field on sale.order
+      // The link between calendar events and sales orders is typically managed
+      // through other means in Odoo (e.g., origin field or custom modules)
 
       const orderId = await this.executeKw(
         "sale.order",

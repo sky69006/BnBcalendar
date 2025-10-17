@@ -350,51 +350,58 @@ export function CalendarGrid({
                 {/* Day view: Staff columns */}
                 {viewMode === 'day' && (
                   <div className="flex flex-1">
-                    {staff.map((staffMember, staffIndex) => {
-                      const appointment = getAppointmentForSlot(slotTime, staffMember);
-                      const isBusy = !appointment && isSlotBusy(slotTime, staffMember);
-                      const isAvailable = isStaffAvailable(slotTime, staffMember);
-                      
-                      // Calculate appointment height based on duration
-                      const interval = settings?.timeInterval || 15;
-                      const slotHeightPx = 60; // Each slot is 60px tall
-                      const appointmentHeight = appointment 
-                        ? (appointment.duration / interval) * slotHeightPx 
-                        : 0;
-                      
-                      return (
-                        <div
-                          key={staffMember.id}
-                          className={cn(
-                            "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
-                            staffIndex < staff.length - 1 && "border-r border-border",
-                            isBusy && "availability-busy bg-red-50/30",
-                            !isAvailable && !appointment && "availability-unavailable bg-muted/40 cursor-not-allowed",
-                            !appointment && !isBusy && isAvailable && "availability-available hover:bg-primary/5 cursor-pointer"
-                          )}
-                          onDragOver={handleDragOver}
-                          onDrop={(e) => handleDrop(e, slotTime, staffMember)}
-                          onClick={() => !appointment && !isBusy && isAvailable && handleSlotClick(slotTime, staffMember)}
-                          data-testid={`time-slot-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
-                        >
-                          {appointment && (
-                            <div 
-                              className="absolute inset-x-2 top-1 z-10"
-                              style={{ height: `${appointmentHeight}px` }}
-                            >
-                              <AppointmentCard
-                                appointment={appointment}
-                                staff={staffMember}
-                                onDragStart={handleDragStart}
-                                onDragEnd={handleDragEnd}
-                                onClick={onAppointmentSelect}
-                                isDragging={draggedAppointment?.id === appointment.id}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                    {staff.length > 0 ? (
+                      staff.map((staffMember, staffIndex) => {
+                        const appointment = getAppointmentForSlot(slotTime, staffMember);
+                        const isBusy = !appointment && isSlotBusy(slotTime, staffMember);
+                        const isAvailable = isStaffAvailable(slotTime, staffMember);
+                        
+                        // Calculate appointment height based on duration
+                        const interval = settings?.timeInterval || 15;
+                        const slotHeightPx = 60; // Each slot is 60px tall
+                        const appointmentHeight = appointment 
+                          ? (appointment.duration / interval) * slotHeightPx 
+                          : 0;
+                        
+                        return (
+                          <div
+                            key={staffMember.id}
+                            className={cn(
+                              "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
+                              staffIndex < staff.length - 1 && "border-r border-border",
+                              isBusy && "availability-busy bg-red-50/30",
+                              !isAvailable && !appointment && "availability-unavailable bg-muted/40",
+                              !appointment && !isBusy && isAvailable && "availability-available hover:bg-primary/5",
+                              !appointment && !isBusy && "cursor-pointer"
+                            )}
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, slotTime, staffMember)}
+                            onClick={() => !appointment && !isBusy && handleSlotClick(slotTime, staffMember)}
+                            data-testid={`time-slot-${staffMember.name.replace(' ', '-').toLowerCase()}-${format(slotTime, 'HH-mm')}`}
+                          >
+                            {appointment && (
+                              <div 
+                                className="absolute inset-x-2 top-1 z-10"
+                                style={{ height: `${appointmentHeight}px` }}
+                              >
+                                <AppointmentCard
+                                  appointment={appointment}
+                                  staff={staffMember}
+                                  onDragStart={handleDragStart}
+                                  onDragEnd={handleDragEnd}
+                                  onClick={onAppointmentSelect}
+                                  isDragging={draggedAppointment?.id === appointment.id}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+                        Loading staff...
+                      </div>
+                    )}
                   </div>
                 )}
 
