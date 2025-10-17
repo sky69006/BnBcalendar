@@ -505,7 +505,7 @@ export function CalendarGrid({
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
         <div className="grid grid-cols-7">
           {/* Day headers */}
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+          {['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'].map(day => (
             <div key={day} className="text-center font-semibold text-sm py-2 text-muted-foreground">
               {day}
             </div>
