@@ -21,6 +21,8 @@ interface OdooAppointment {
   duration: number;
   description?: string;
   location?: string;
+  appointment_category_id?: [number, string] | false;
+  categoryColor?: string | null;
 }
 
 interface OdooResource {
@@ -167,13 +169,46 @@ export class OdooService {
             "id", "name", "start", "stop", 
             "partner_id", "partner_ids", "user_id", 
             "appointment_resource_id", "resource_ids", "appointment_type_id",
-            "duration", "description", "location"
+            "duration", "description", "location", "appointment_category_id"
           ],
           order: "start ASC"
         }
       );
       
-      return appointments;
+      // Fetch category colors for appointments that have a category
+      const categoryIds = appointments
+        .filter((apt: any) => apt.appointment_category_id && apt.appointment_category_id[0])
+        .map((apt: any) => apt.appointment_category_id[0]);
+      
+      const uniqueCategoryIds = Array.from(new Set(categoryIds));
+      
+      let categoryColors: { [key: number]: string } = {};
+      
+      if (uniqueCategoryIds.length > 0) {
+        const categories = await this.executeKw(
+          "appointment.category",
+          "read",
+          [uniqueCategoryIds],
+          {
+            fields: ["id", "color"]
+          }
+        );
+        
+        categoryColors = categories.reduce((acc: any, cat: any) => {
+          acc[cat.id] = cat.color;
+          return acc;
+        }, {});
+      }
+      
+      // Add category color to each appointment
+      const appointmentsWithColors = appointments.map((apt: any) => ({
+        ...apt,
+        categoryColor: apt.appointment_category_id && apt.appointment_category_id[0] 
+          ? categoryColors[apt.appointment_category_id[0]] || null
+          : null
+      }));
+      
+      return appointmentsWithColors;
     } catch (error) {
       console.error("Failed to fetch appointments from Odoo:", error);
       throw error;

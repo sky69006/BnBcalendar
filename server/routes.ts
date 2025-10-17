@@ -335,6 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           staffId: staff?.id,
           status: "confirmed",
           notes: odooApp.description || "",
+          categoryColor: odooApp.categoryColor || null,
         };
 
         if (existingAppointment) {
