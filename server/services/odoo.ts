@@ -157,12 +157,16 @@ export class OdooService {
 
   async fetchAppointments(startDate: string, endDate: string): Promise<OdooAppointment[]> {
     try {
+      console.log(`[Odoo] Fetching appointments from ${startDate} to ${endDate}`);
+      
+      // Use overlap logic: fetch appointments that overlap with the date range
+      // An appointment overlaps if: start < endDate AND stop > startDate
       const appointments = await this.executeKw(
         "calendar.event",
         "search_read",
         [[
-          ["start", ">=", startDate],
-          ["stop", "<=", endDate]
+          ["start", "<", endDate],
+          ["stop", ">", startDate]
         ]],
         {
           fields: [
@@ -207,6 +211,8 @@ export class OdooService {
           ? categoryColors[apt.appointment_category_id[0]] || null
           : null
       }));
+      
+      console.log(`[Odoo] Fetched ${appointmentsWithColors.length} appointments from Odoo`);
       
       return appointmentsWithColors;
     } catch (error) {

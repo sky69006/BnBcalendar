@@ -240,8 +240,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const { start, end } = req.body;
-      const startDate = start ? new Date(start).toISOString() : new Date().toISOString();
-      const endDate = end ? new Date(end).toISOString() : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      // Default: 30 days back, 90 days forward to capture past and future appointments
+      const defaultStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const defaultEnd = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+      
+      const startDate = start ? new Date(start).toISOString() : defaultStart.toISOString();
+      const endDate = end ? new Date(end).toISOString() : defaultEnd.toISOString();
 
       // Fetch resources (employees) from Odoo
       const odooResources = await odooService.fetchResources();
