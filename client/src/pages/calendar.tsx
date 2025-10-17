@@ -110,19 +110,21 @@ export default function CalendarPage() {
   // Staff filtering handlers
   const handleStaffToggle = (staffId: string) => {
     setSelectedStaffIds(prev => {
-      if (prev.length === 0) {
-        // If none selected (all showing), select all except this one
+      // If all currently selected (empty or full array)
+      if (prev.length === 0 || prev.length === staff.length) {
+        // Deselecting one means select all except this one
         return staff.filter(s => s.id !== staffId).map(s => s.id);
       }
+      
       if (prev.includes(staffId)) {
         // Remove from selection
         const newSelection = prev.filter(id => id !== staffId);
-        // If removing the last one, show all (empty array)
+        // If that was the last one, show all (empty array)
         return newSelection.length === 0 ? [] : newSelection;
       } else {
         // Add to selection
         const newSelection = [...prev, staffId];
-        // If all are now selected, show all (empty array)
+        // If all are now selected, use empty array to indicate "all"
         return newSelection.length === staff.length ? [] : newSelection;
       }
     });
@@ -130,12 +132,6 @@ export default function CalendarPage() {
 
   const handleSelectAllStaff = () => {
     setSelectedStaffIds([]);
-  };
-
-  const handleDeselectAllStaff = () => {
-    if (staff.length > 0) {
-      setSelectedStaffIds([staff[0].id]);
-    }
   };
 
   return (
@@ -237,7 +233,6 @@ export default function CalendarPage() {
             selectedStaffIds={selectedStaffIds}
             onStaffToggle={handleStaffToggle}
             onSelectAll={handleSelectAllStaff}
-            onDeselectAll={handleDeselectAllStaff}
           />
         </aside>
 

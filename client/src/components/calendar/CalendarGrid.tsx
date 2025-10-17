@@ -47,9 +47,10 @@ export function CalendarGrid({
     queryKey: ["/api/staff"],
   });
 
-  // Filter staff based on selection (if no staff selected, show all)
+  // Filter staff based on selection
+  // If all staff are selected or none selected, show all
   const staff = useMemo(() => {
-    if (selectedStaffIds.length === 0) {
+    if (selectedStaffIds.length === 0 || selectedStaffIds.length === allStaff.length) {
       return allStaff;
     }
     return allStaff.filter(s => selectedStaffIds.includes(s.id));

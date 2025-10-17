@@ -50,6 +50,17 @@ All tables use UUID primary keys and include timestamps. Odoo IDs are stored for
 - Click-to-create appointments: works in all view modes (Day, Week, Month) by clicking empty slots/cells.
 - Sales order creation: When appointments are booked, sales orders are automatically created in Odoo with order lines for each selected service.
 - Category-based color coding: Appointments display in their Odoo appointment category color across all calendar views (day, week, month).
+- **Staff/Resource Filtering**: 
+  - Resources legend panel on left side with multi-select checkboxes for each staff member
+  - "All" button to show all resources (empty selection = show all)
+  - Individual checkboxes to filter specific staff members
+  - Week view displays staff columns per day (Day | Staff1 | Staff2 | ... for each day)
+  - Day view shows staff columns horizontally
+  - Filtering persists across view mode changes
+- **Collapsible Appointment Details Panel**:
+  - Panel can be collapsed to narrow strip (48px) with expand/collapse buttons
+  - Smooth 300ms transition animation
+  - Calendar automatically expands to use available space when panel is collapsed
 
 ## Technical Implementations
 - Client-side filtering of services based on Odoo resource constraints to prevent booking errors.

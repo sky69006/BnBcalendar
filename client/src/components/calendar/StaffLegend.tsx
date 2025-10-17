@@ -8,18 +8,15 @@ interface StaffLegendProps {
   selectedStaffIds: string[];
   onStaffToggle: (staffId: string) => void;
   onSelectAll: () => void;
-  onDeselectAll: () => void;
 }
 
 export function StaffLegend({
   staff,
   selectedStaffIds,
   onStaffToggle,
-  onSelectAll,
-  onDeselectAll
+  onSelectAll
 }: StaffLegendProps) {
-  const allSelected = selectedStaffIds.length === staff.length;
-  const noneSelected = selectedStaffIds.length === 0;
+  const allSelected = selectedStaffIds.length === 0 || selectedStaffIds.length === staff.length;
 
   return (
     <div className="bg-card border border-border rounded-lg p-4">
@@ -28,30 +25,19 @@ export function StaffLegend({
           <Users size={16} className="text-muted-foreground" />
           <h3 className="font-semibold text-foreground">Resources</h3>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={onSelectAll}
-            className="text-xs text-primary hover:underline"
-            disabled={allSelected}
-            data-testid="button-select-all-staff"
-          >
-            All
-          </button>
-          <span className="text-xs text-muted-foreground">|</span>
-          <button
-            onClick={onDeselectAll}
-            className="text-xs text-primary hover:underline"
-            disabled={noneSelected}
-            data-testid="button-deselect-all-staff"
-          >
-            None
-          </button>
-        </div>
+        <button
+          onClick={onSelectAll}
+          className="text-xs text-primary hover:underline"
+          disabled={allSelected}
+          data-testid="button-select-all-staff"
+        >
+          All
+        </button>
       </div>
 
       <div className="space-y-2">
         {staff.map((staffMember) => {
-          const isChecked = noneSelected || selectedStaffIds.includes(staffMember.id);
+          const isChecked = allSelected || selectedStaffIds.includes(staffMember.id);
           
           return (
             <div key={staffMember.id} className="flex items-center gap-3">
