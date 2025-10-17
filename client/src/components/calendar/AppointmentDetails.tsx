@@ -10,7 +10,9 @@ import {
   Mail,
   CalendarPlus,
   XCircle,
-  CheckCircle
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Appointment, Staff } from "@shared/schema";
@@ -20,6 +22,8 @@ interface AppointmentDetailsProps {
   staff?: Staff[];
   onReschedule?: (appointment: Appointment) => void;
   onCancel?: (appointment: Appointment) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 interface AppointmentCategory {
@@ -32,16 +36,46 @@ export function AppointmentDetails({
   appointment, 
   staff = [], 
   onReschedule, 
-  onCancel 
+  onCancel,
+  isCollapsed = false,
+  onToggleCollapse
 }: AppointmentDetailsProps) {
   // Fetch appointment categories
   const { data: categories = [] } = useQuery<AppointmentCategory[]>({
     queryKey: ["/api/appointment-categories"],
   });
+
+  // Collapsed state - only show toggle button
+  if (isCollapsed) {
+    return (
+      <div className="h-full flex items-start justify-center pt-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleCollapse}
+          className="rotate-0"
+          data-testid="button-expand-details"
+        >
+          <ChevronLeft size={20} />
+        </Button>
+      </div>
+    );
+  }
+
   if (!appointment) {
     return (
       <div className="p-6">
-        <h2 className="text-lg font-bold text-foreground mb-4">Appointment Details</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-foreground">Appointment Details</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleCollapse}
+            data-testid="button-collapse-details"
+          >
+            <ChevronRight size={20} />
+          </Button>
+        </div>
         <p className="text-sm text-muted-foreground mb-4">
           Click on an appointment to view details
         </p>
@@ -104,7 +138,17 @@ export function AppointmentDetails({
 
   return (
     <div className="p-6">
-      <h2 className="text-lg font-bold text-foreground mb-4">Appointment Details</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-foreground">Appointment Details</h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleCollapse}
+          data-testid="button-collapse-details"
+        >
+          <ChevronRight size={20} />
+        </Button>
+      </div>
       
       <div className="bg-muted/50 rounded-lg p-4 border border-border">
         <div className="flex items-start justify-between mb-4">

@@ -27,6 +27,7 @@ export default function CalendarPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [detailsPanelCollapsed, setDetailsPanelCollapsed] = useState(false);
 
   const { syncWithOdoo, isSyncing, syncResult, syncError } = useOdooSync();
 
@@ -291,10 +292,15 @@ export default function CalendarPage() {
             onClose={() => setShowSettings(false)} 
           />
         ) : (
-          <aside className="w-96 bg-card border-l border-border overflow-y-auto custom-scrollbar">
+          <aside className={cn(
+            "bg-card border-l border-border overflow-y-auto custom-scrollbar transition-all duration-300 ease-in-out",
+            detailsPanelCollapsed ? "w-12" : "w-96"
+          )}>
             <AppointmentDetails
               appointment={selectedAppointment}
               staff={staff}
+              isCollapsed={detailsPanelCollapsed}
+              onToggleCollapse={() => setDetailsPanelCollapsed(!detailsPanelCollapsed)}
               onReschedule={(appointment) => {
                 setSelectedAppointment(appointment);
                 setRescheduleDialogOpen(true);
