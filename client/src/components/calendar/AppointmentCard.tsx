@@ -123,7 +123,7 @@ export function AppointmentCard({
         isSelected && "ring-4 ring-primary ring-offset-0 shadow-lg"
       )}
       style={categoryColor ? {
-        backgroundColor: `${categoryColor}E6`, // E6 is 90% opacity in hex
+        backgroundColor: `${categoryColor}20`, // 20 is ~12.5% opacity in hex
         borderLeft: `4px solid ${categoryColor}`,
       } : undefined}
       draggable="true"
