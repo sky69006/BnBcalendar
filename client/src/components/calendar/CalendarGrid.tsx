@@ -367,7 +367,7 @@ export function CalendarGrid({
                           <div
                             key={staffMember.id}
                             className={cn(
-                              "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
+                              "flex-1 time-slot relative min-h-[60px] transition-colors",
                               staffIndex < staff.length - 1 && "border-r border-border",
                               isBusy && "availability-busy bg-red-50/30",
                               !isAvailable && !appointment && "availability-unavailable bg-muted/40",
@@ -381,7 +381,7 @@ export function CalendarGrid({
                           >
                             {appointment && (
                               <div 
-                                className="absolute inset-x-2 top-1 z-10"
+                                className="absolute inset-0 z-10"
                                 style={{ height: `${appointmentHeight}px` }}
                               >
                                 <AppointmentCard
@@ -439,7 +439,7 @@ export function CalendarGrid({
                         <div
                           key={day.toISOString()}
                           className={cn(
-                            "flex-1 time-slot relative px-2 py-1 min-h-[60px] transition-colors",
+                            "flex-1 time-slot relative min-h-[60px] transition-colors",
                             dayIndex < displayDays.length - 1 && "border-r border-border",
                             !appointment && "availability-available hover:bg-primary/5 cursor-pointer"
                           )}
@@ -448,7 +448,7 @@ export function CalendarGrid({
                         >
                           {appointment && aptStaff && (
                             <div 
-                              className="absolute inset-x-2 top-1 z-10"
+                              className="absolute inset-0 z-10"
                               style={{ height: `${appointmentHeight}px` }}
                             >
                               <AppointmentCard
