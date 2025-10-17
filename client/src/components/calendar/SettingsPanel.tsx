@@ -39,6 +39,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     queryKey: ["/api/staff"],
   });
 
+  const { data: categories } = useQuery<any[]>({
+    queryKey: ["/api/appointment-categories"],
+  });
+
   const [localSettings, setLocalSettings] = useState<Partial<CalendarSettings>>({});
 
   const randomizeColorsMutation = useMutation({
@@ -46,13 +50,24 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
       const response = await apiRequest("POST", "/api/appointment-categories/randomize-colors", {});
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Colors Updated!",
-        description: `Successfully updated ${data.updated} category colors in Odoo`,
+        description: `Successfully updated ${data.updated} category colors. Syncing appointments...`,
       });
-      // Invalidate appointments to refresh with new colors
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      
+      // Invalidate categories to refresh legend
+      queryClient.invalidateQueries({ queryKey: ["/api/appointment-categories"] });
+      
+      // Trigger sync to update appointments with new colors
+      const today = new Date();
+      const pastDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const futureDate = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+      
+      syncWithOdoo({
+        start: pastDate.toISOString(),
+        end: futureDate.toISOString(),
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -277,6 +292,44 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <Palette size={16} />
             {randomizeColorsMutation.isPending ? "Updating..." : "Randomize Category Colors"}
           </Button>
+
+          {/* Category Colors Legend */}
+          {categories && categories.length > 0 && (
+            <div className="mt-4 p-3 rounded-lg bg-muted/50">
+              <h4 className="text-xs font-semibold text-foreground mb-2">Category Colors</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {categories.map((category) => {
+                  // Convert Odoo color index to hex
+                  const odooColors = [
+                    '#F06050', '#F4A460', '#F7CD1F', '#6CC1ED', 
+                    '#814968', '#EB7E7F', '#2C8397', '#475577', 
+                    '#D6145F', '#30C381', '#9365B8', '#808080'
+                  ];
+                  
+                  const colorIndex = parseInt(category.color);
+                  const hexColor = !isNaN(colorIndex) && colorIndex >= 0 && colorIndex < odooColors.length 
+                    ? odooColors[colorIndex] 
+                    : category.color;
+
+                  return (
+                    <div key={category.id} className="flex items-center gap-2" data-testid={`category-legend-${category.id}`}>
+                      <div 
+                        className="w-3 h-3 rounded border-l-2 flex-shrink-0" 
+                        style={{ 
+                          borderColor: hexColor, 
+                          backgroundColor: `${hexColor}20` 
+                        }}
+                        data-testid={`category-swatch-${category.id}`}
+                      ></div>
+                      <span className="text-xs text-foreground truncate" title={category.name}>
+                        {category.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           
           <div className="mt-2 text-center">
             <p className="text-xs text-muted-foreground">
