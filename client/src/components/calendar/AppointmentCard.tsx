@@ -10,6 +10,7 @@ interface AppointmentCardProps {
   onDragEnd?: (e: React.DragEvent) => void;
   onClick?: (appointment: Appointment) => void;
   isDragging?: boolean;
+  isSelected?: boolean;
 }
 
 const SERVICE_COLORS = {
@@ -26,7 +27,8 @@ export function AppointmentCard({
   onDragStart, 
   onDragEnd, 
   onClick,
-  isDragging = false 
+  isDragging = false,
+  isSelected = false 
 }: AppointmentCardProps) {
   const [isDraggingLocal, setIsDraggingLocal] = useState(false);
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
@@ -117,7 +119,8 @@ export function AppointmentCard({
       className={cn(
         "appointment-card rounded-md p-2 h-full w-full cursor-pointer transition-all overflow-hidden",
         !categoryColor && serviceColorClass, // Only use service color if no category color
-        isDragging && "dragging opacity-50 transform rotate-1"
+        isDragging && "dragging opacity-50 transform rotate-1",
+        isSelected && "ring-4 ring-primary ring-offset-0 shadow-lg"
       )}
       style={categoryColor ? {
         backgroundColor: `${categoryColor}E6`, // E6 is 90% opacity in hex

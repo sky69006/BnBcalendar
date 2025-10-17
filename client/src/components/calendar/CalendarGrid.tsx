@@ -391,6 +391,7 @@ export function CalendarGrid({
                                   onDragEnd={handleDragEnd}
                                   onClick={onAppointmentSelect}
                                   isDragging={draggedAppointment?.id === appointment.id}
+                                  isSelected={selectedAppointment?.id === appointment.id}
                                 />
                               </div>
                             )}
@@ -458,6 +459,7 @@ export function CalendarGrid({
                                 onDragEnd={handleDragEnd}
                                 onClick={onAppointmentSelect}
                                 isDragging={draggedAppointment?.id === appointment.id}
+                                isSelected={selectedAppointment?.id === appointment.id}
                               />
                             </div>
                           )}
@@ -555,12 +557,15 @@ export function CalendarGrid({
 
                     const categoryColor = apt.categoryColor ? getCategoryColor(apt.categoryColor) : null;
 
+                    const isSelected = selectedAppointment?.id === apt.id;
+                    
                     return (
                       <div
                         key={apt.id}
                         className={cn(
-                          "text-xs p-1 rounded cursor-pointer truncate",
-                          !categoryColor && "bg-primary/10 hover:bg-primary/20"
+                          "text-xs p-1 rounded cursor-pointer truncate transition-all",
+                          !categoryColor && "bg-primary/10 hover:bg-primary/20",
+                          isSelected && "ring-2 ring-primary shadow-md"
                         )}
                         style={categoryColor ? {
                           backgroundColor: `${categoryColor}20`,
