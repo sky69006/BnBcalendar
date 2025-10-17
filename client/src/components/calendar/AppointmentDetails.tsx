@@ -149,13 +149,6 @@ export function AppointmentDetails({
           </>
         )}
 
-        {appointment.status === 'confirmed' && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CheckCircle className="w-3 h-3 text-green-500" />
-            <span>Email confirmation sent</span>
-          </div>
-        )}
-
         {appointment.notes && (
           <>
             <Separator className="my-4" />
