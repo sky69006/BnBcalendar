@@ -56,10 +56,6 @@ export function StaffLegend({
                   htmlFor={`staff-${staffMember.id}`}
                   className="flex items-center gap-1.5 cursor-pointer"
                 >
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: staffMember.color }}
-                  />
                   <span className="text-sm text-foreground whitespace-nowrap">{staffMember.name}</span>
                 </Label>
               </div>
@@ -103,10 +99,6 @@ export function StaffLegend({
                 htmlFor={`staff-${staffMember.id}`}
                 className="flex items-center gap-2 cursor-pointer flex-1"
               >
-                <div 
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: staffMember.color }}
-                />
                 <span className="text-sm text-foreground">{staffMember.name}</span>
               </Label>
             </div>
