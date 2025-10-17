@@ -37,15 +37,15 @@ export function CancelAppointmentDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
       toast({
-        title: "Appointment cancelled",
-        description: "The appointment has been successfully cancelled and removed from Odoo.",
+        title: "Afspraak geannuleerd",
+        description: "De afspraak is succesvol geannuleerd en verwijderd uit Odoo.",
       });
       onOpenChange(false);
     },
     onError: (error) => {
       toast({
-        title: "Failed to cancel",
-        description: error instanceof Error ? error.message : "Unknown error",
+        title: "Annuleren mislukt",
+        description: error instanceof Error ? error.message : "Onbekende fout",
         variant: "destructive",
       });
     },
@@ -61,37 +61,37 @@ export function CancelAppointmentDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent data-testid="dialog-cancel-appointment">
         <AlertDialogHeader>
-          <AlertDialogTitle>Cancel Appointment?</AlertDialogTitle>
+          <AlertDialogTitle>Afspraak Annuleren?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to cancel this appointment? This will permanently delete the appointment
-            from both the calendar and Odoo.
+            Weet u zeker dat u deze afspraak wilt annuleren? Dit zal de afspraak permanent verwijderen
+            uit zowel de kalender als Odoo.
           </AlertDialogDescription>
         </AlertDialogHeader>
         
         <div className="py-4 space-y-2">
           <p className="text-sm">
-            <span className="font-semibold">Customer:</span> {appointment.customerName}
+            <span className="font-semibold">Klant:</span> {appointment.customerName}
           </p>
           <p className="text-sm">
             <span className="font-semibold">Service:</span> {appointment.service}
           </p>
           <p className="text-sm">
-            <span className="font-semibold">Date & Time:</span>{" "}
-            {new Date(appointment.startTime).toLocaleString('en-US', {
+            <span className="font-semibold">Datum & Tijd:</span>{" "}
+            {new Date(appointment.startTime).toLocaleString('nl-NL', {
               weekday: 'short',
               year: 'numeric',
               month: 'short',
               day: 'numeric',
               hour: 'numeric',
               minute: '2-digit',
-              hour12: true
+              hour12: false
             })}
           </p>
         </div>
 
         <AlertDialogFooter>
           <AlertDialogCancel data-testid="button-cancel-no">
-            No, Keep Appointment
+            Nee, Behoud Afspraak
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleCancel}
@@ -99,7 +99,7 @@ export function CancelAppointmentDialog({
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             data-testid="button-cancel-yes"
           >
-            {cancelMutation.isPending ? "Cancelling..." : "Yes, Cancel Appointment"}
+            {cancelMutation.isPending ? "Annuleren..." : "Ja, Annuleer Afspraak"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

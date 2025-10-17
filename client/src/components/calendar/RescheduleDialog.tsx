@@ -71,15 +71,15 @@ export function RescheduleDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
       toast({
-        title: "Appointment rescheduled",
-        description: "The appointment has been successfully rescheduled.",
+        title: "Afspraak verplaatst",
+        description: "De afspraak is succesvol verplaatst.",
       });
       onOpenChange(false);
     },
     onError: (error) => {
       toast({
-        title: "Failed to reschedule",
-        description: error instanceof Error ? error.message : "Unknown error",
+        title: "Verplaatsen mislukt",
+        description: error instanceof Error ? error.message : "Onbekende fout",
         variant: "destructive",
       });
     },
@@ -113,22 +113,22 @@ export function RescheduleDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]" data-testid="dialog-reschedule">
         <DialogHeader>
-          <DialogTitle>Reschedule Appointment</DialogTitle>
+          <DialogTitle>Afspraak Verplaatsen</DialogTitle>
           <DialogDescription>
-            Change the date, time, or staff member for this appointment.
+            Wijzig de datum, tijd of medewerker voor deze afspraak.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Appointment</Label>
+            <Label>Afspraak</Label>
             <p className="text-sm text-muted-foreground">
               {appointment.customerName} - {appointment.service}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Select New Date</Label>
+            <Label>Selecteer Nieuwe Datum</Label>
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -139,10 +139,10 @@ export function RescheduleDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="time">Select Time</Label>
+            <Label htmlFor="time">Selecteer Tijd</Label>
             <Select value={selectedTime} onValueChange={setSelectedTime}>
               <SelectTrigger id="time" data-testid="select-time">
-                <SelectValue placeholder="Select time" />
+                <SelectValue placeholder="Selecteer tijd" />
               </SelectTrigger>
               <SelectContent>
                 {timeOptions.map((time) => (
@@ -155,10 +155,10 @@ export function RescheduleDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="staff">Staff Member</Label>
+            <Label htmlFor="staff">Medewerker</Label>
             <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
               <SelectTrigger id="staff" data-testid="select-staff">
-                <SelectValue placeholder="Select staff member" />
+                <SelectValue placeholder="Selecteer medewerker" />
               </SelectTrigger>
               <SelectContent>
                 {staff.map((member) => (
@@ -177,14 +177,14 @@ export function RescheduleDialog({
             onClick={() => onOpenChange(false)}
             data-testid="button-cancel-reschedule"
           >
-            Cancel
+            Annuleren
           </Button>
           <Button
             onClick={handleReschedule}
             disabled={!selectedDate || !selectedTime || !selectedStaffId || rescheduleMutation.isPending}
             data-testid="button-confirm-reschedule"
           >
-            {rescheduleMutation.isPending ? "Rescheduling..." : "Reschedule"}
+            {rescheduleMutation.isPending ? "Verplaatsen..." : "Verplaatsen"}
           </Button>
         </div>
       </DialogContent>
