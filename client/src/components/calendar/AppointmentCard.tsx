@@ -120,7 +120,7 @@ export function AppointmentCard({
         isDragging && "dragging opacity-50 transform rotate-1"
       )}
       style={categoryColor ? {
-        backgroundColor: `${categoryColor}20`, // 20 is 12.5% opacity in hex
+        backgroundColor: `${categoryColor}E6`, // E6 is 90% opacity in hex
         borderLeft: `4px solid ${categoryColor}`,
       } : undefined}
       draggable="true"
